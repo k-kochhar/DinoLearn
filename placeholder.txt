@@ -1,1 +1,0 @@
-This is a placeholder for creating images. In a real project, we would need to generate or acquire actual image files for student-learning.png and pattern.png.
