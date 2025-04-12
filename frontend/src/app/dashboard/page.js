@@ -112,7 +112,7 @@ export default function Dashboard() {
           
           <nav className="hidden md:flex items-center gap-8">
             <Link href="/dashboard" className="text-[#43587C] font-bold border-b-2 border-[#E17454] pb-1">Dashboard</Link>
-            <Link href="/courses" className="text-[#2C3342] hover:text-[#E17454] transition-colors">My Courses</Link>
+            <Link href="/my-courses" className="text-[#2C3342] hover:text-[#E17454] transition-colors">My Courses</Link>
             <Link href="/library" className="text-[#2C3342] hover:text-[#E17454] transition-colors">Library</Link>
             <div className="flex items-center gap-2 bg-white py-1.5 px-3 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer">
               <div className="h-9 w-9 bg-[#9EC1D9] rounded-full flex items-center justify-center">
