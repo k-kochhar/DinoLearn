@@ -1,3 +1,6 @@
+# DinoLearn Project Requirements
+
+# Backend Python dependencies
 fastapi>=0.95.0
 uvicorn>=0.21.1
 beanie>=1.18.0
@@ -6,3 +9,13 @@ httpx>=0.24.0
 openai>=1.0.0
 python-dotenv>=1.0.0
 pydantic>=2.0.0
+
+# System Requirements
+# - Python 3.x
+# - Node.js and npm/yarn
+# - MongoDB
+# - API keys for OpenAI and Google Gemini
+
+# Frontend and Expo App dependencies can be installed via:
+# - For Next.js frontend: cd frontend && npm install
+# - For Expo app: cd expo-app && npm install
