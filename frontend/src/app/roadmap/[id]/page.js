@@ -110,7 +110,7 @@ export default function RoadmapPage() {
       <div className="min-h-screen bg-[#E5FCFF] flex items-center justify-center">
         <div className="text-center max-w-md">
           <h2 className="text-2xl font-bold text-[#43587C] mb-4">Roadmap Not Found</h2>
-          <p className="text-[#2C3342]/70 mb-8">We couldn't find the roadmap you're looking for.</p>
+          <p className="text-[#2C3342]/70 mb-8">We couldn&apos;t find the roadmap you&apos;re looking for.</p>
           <Link
             href="/create-course"
             className="inline-block bg-[#E17454] text-white py-3 px-6 rounded-xl hover:bg-[#cf6143] transition-colors"
