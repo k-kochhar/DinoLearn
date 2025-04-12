@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -272,7 +272,7 @@ export default function Dashboard() {
                   No courses match your search criteria.
                 </p>
 
-                <div class="flex flex-col space-y-4">
+                <div className="flex flex-col space-y-4">
                   <button
                     onClick={() => setSearchQuery("")}
                     className="mt-4 bg-[#E17454] px-8 py-3.5 rounded-xl text-white hover:bg-[#cf6143] transition-colors font-medium"
