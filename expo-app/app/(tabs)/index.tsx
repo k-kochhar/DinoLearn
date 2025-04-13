@@ -11,7 +11,8 @@ import {
   useWindowDimensions,
   ActivityIndicator,
   Alert,
-  Keyboard
+  Keyboard,
+  Image
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -20,6 +21,7 @@ import { DinoLearnColors } from '@/constants/Colors';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { DinoHeader } from '@/components/DinoHeader';
+import { LoadingDino } from '@/components/LoadingDino';
 import { CourseCard } from '@/components/CourseCard';
 import Svg, { Path } from 'react-native-svg';
 
@@ -109,17 +111,15 @@ export default function Dashboard() {
     // Dismiss keyboard
     Keyboard.dismiss();
     
-    // Small delay to show loading state (for better UX)
+    // Navigate to loading screen with the query
+    router.push({
+      pathname: '/search-loading',
+      params: { query: searchQuery.trim() }
+    });
+    
+    // Reset searching state and clear query after a short delay
     setTimeout(() => {
       setIsSearching(false);
-      
-      // Navigate to roadmap screen with the search query as the topic
-      router.push({
-        pathname: '/roadmap',
-        params: { topic: searchQuery.trim() }
-      });
-      
-      // Clear search query after navigation
       setSearchQuery('');
     }, 500);
   };
@@ -196,6 +196,14 @@ export default function Dashboard() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Search Section */}
         <View style={styles.searchSection}>
+          <View style={styles.dinoTeacherContainer}>
+            <Image 
+              source={require('@/assets/images/Teaching.png')} 
+              style={styles.dinoTeacherImage}
+              resizeMode="contain"
+            />
+          </View>
+          
           <Text style={[styles.searchTitle, { color: colors.primary }]}>
             What would you like to learn today?
           </Text>
@@ -461,5 +469,15 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
-  }
+  },
+  dinoTeacherContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    marginTop: 10,
+  },
+  dinoTeacherImage: {
+    width: 150,
+    height: 150,
+  },
 });

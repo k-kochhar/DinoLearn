@@ -7,8 +7,7 @@ import {
   ScrollView,
   SafeAreaView,
   Image,
-  Alert,
-  ActivityIndicator
+  Alert
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -16,8 +15,10 @@ import { DinoLearnColors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { DinoHeader } from '@/components/DinoHeader';
+import { LoadingDino } from '@/components/LoadingDino';
 import Svg, { Path } from 'react-native-svg';
 import { generateRoadmap, RoadmapData } from '@/services/api';
+import { dinosaurRoadmap } from '@/services/mock-data';
 
 // Define missing colors
 const primaryColor = DinoLearnColors.navyBlue; // Using navyBlue as primary color
@@ -25,25 +26,7 @@ const errorBackgroundColor = '#FEE2E2'; // Light red background for errors
 const errorTextColor = '#DC2626'; // Red text color for errors
 
 // Fallback roadmap data (used when API fails)
-const fallbackRoadmapData = {
-  "topic": "Dinosaurs",
-  "roadmap": [
-    { "day": 1, "title": "What Are Dinosaurs?" },
-    { "day": 2, "title": "The Triassic Period: The Rise Begins" },
-    { "day": 3, "title": "The Jurassic Period: Giants Take Over" },
-    { "day": 4, "title": "The Cretaceous Period: Peak Diversity" },
-    { "day": 5, "title": "Famous Dinosaur Types: Herbivores vs Carnivores" },
-    { "day": 6, "title": "Tyrannosaurus Rex and Other Apex Predators" },
-    { "day": 7, "title": "How Dinosaurs Lived: Behavior and Ecosystems" },
-    { "day": 8, "title": "Dinosaur Evolution and Adaptations" },
-    { "day": 9, "title": "Fossils: How We Know What We Know" },
-    { "day": 10, "title": "Theories Behind Dinosaur Extinction" },
-    { "day": 11, "title": "Birds: The Living Dinosaurs" },
-    { "day": 12, "title": "Dinosaur Myths and Pop Culture" },
-    { "day": 13, "title": "Modern Paleontology and New Discoveries" },
-    { "day": 14, "title": "Quiz Day: Test Your Dinosaur Knowledge" }
-  ]
-};
+const fallbackRoadmapData = dinosaurRoadmap;
 
 // Sample lesson data for Day 1
 const lessonData = {
@@ -235,12 +218,10 @@ export default function RoadmapScreen() {
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
         <DinoHeader showBackButton={true} backRoute="/(tabs)" title="Loading Roadmap..." />
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={primaryColor} />
-          <Text style={[styles.loadingText, { color: colors.text }]}>
-            Loading your roadmap...
-          </Text>
-        </View>
+        <LoadingDino 
+          message="Drawing up your lesson plan!" 
+          isLoading={isLoading}
+        />
       </SafeAreaView>
     );
   }
@@ -256,7 +237,7 @@ export default function RoadmapScreen() {
       <DinoHeader 
         showBackButton={true} 
         backRoute="/(tabs)" 
-        title={`${displayRoadmap.topic} Roadmap`} 
+        title={`${displayRoadmap.topic}`} 
       />
       
       {error && (

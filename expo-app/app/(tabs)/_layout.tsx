@@ -22,10 +22,9 @@ const BookIcon = ({ color }: { color: string }) => (
   </Svg>
 );
 
-const LibraryIcon = ({ color }: { color: string }) => (
+const LeaderboardIcon = ({ color }: { color: string }) => (
   <Svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <Path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-    <Path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+    <Path d="M18 21v-8M12 21V9M6 21v-4" />
   </Svg>
 );
 
@@ -74,10 +73,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="library"
+        name="leaderboard"
         options={{
-          title: 'Library',
-          tabBarIcon: ({ color }) => <LibraryIcon color={color} />,
+          title: 'Leaderboard',
+          tabBarIcon: ({ color }) => <LeaderboardIcon color={color} />,
         }}
       />
     </Tabs>
