@@ -52,28 +52,30 @@ async def get_roadmaps():
     """Get all roadmaps with their lessons in the desired format"""
     roadmaps = await Roadmap.find_all().to_list()
     
-    # Format the response to include the roadmap_data field
-    formatted_roadmaps = []
+    # Use a simpler approach to avoid serialization issues
+    result = []
     for roadmap in roadmaps:
-        # Get the raw model with both the original fields and computed fields
-        roadmap_dict = roadmap.model_dump(by_alias=True, exclude_unset=False)
+        # Fetch the actual lesson documents
+        lesson_docs = []
+        for lesson_link in roadmap.lessons:
+            # Convert DBRef to string to avoid serialization issues
+            lesson_id = str(lesson_link.id)
+            lesson = await Lesson.get(lesson_id)
+            if lesson:
+                lesson_docs.append({
+                    "day": lesson.day,
+                    "title": lesson.title
+                })
         
-        # Include the roadmap_data field in the response
-        if not hasattr(roadmap, "roadmap_data"):
-            # Generate the roadmap_data on-the-fly if needed
-            topic = roadmap.title.replace(" Roadmap", "")
-            roadmap_items = []
-            for lesson in roadmap.lessons:
-                if hasattr(lesson, "day") and hasattr(lesson, "title"):
-                    roadmap_items.append({
-                        "day": lesson.day,
-                        "title": lesson.title
-                    })
-            roadmap_dict["roadmap_data"] = {
+        # Create a clean dictionary for the response
+        topic = roadmap.title.replace(" Roadmap", "")
+        result.append({
+            "_id": str(roadmap.id),
+            "title": roadmap.title,
+            "roadmap_data": {
                 "topic": topic,
-                "roadmap": roadmap_items
+                "roadmap": lesson_docs
             }
-            
-        formatted_roadmaps.append(roadmap_dict)
+        })
     
-    return formatted_roadmaps
+    return result
