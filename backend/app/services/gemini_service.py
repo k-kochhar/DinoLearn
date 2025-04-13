@@ -16,30 +16,37 @@ async def generate_roadmap_from_gemini(topic: str):
     print("Gemini API client initialized successfully")
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={api_key}"
     
-    prompt = f'''Create a 14-day roadmap for learning about "{topic}".
-    
+    prompt = f'''Create a 14-day progressive learning roadmap for "{topic}" that starts with the absolute basics and gradually builds up to advanced concepts.
+
     Return ONLY the following JSON format with no explanations before or after:
     {{
       "topic": "{topic}",
       "roadmap": [
-        {{ "day": 1, "title": "What Are {topic}?" }},
-        {{ "day": 2, "title": "History and Origins of {topic}" }},
-        {{ "day": 3, "title": "Fundamental Concepts of {topic}" }},
-        {{ "day": 4, "title": "Key Components of {topic}" }},
-        {{ "day": 5, "title": "Important Types and Categories" }},
-        {{ "day": 6, "title": "Advanced Concepts in {topic}" }},
-        {{ "day": 7, "title": "Practical Applications of {topic}" }},
-        {{ "day": 8, "title": "Evolution and Development" }},
-        {{ "day": 9, "title": "Research Methods and Discoveries" }},
-        {{ "day": 10, "title": "Challenges and Solutions" }},
-        {{ "day": 11, "title": "Modern Developments" }},
-        {{ "day": 12, "title": "{topic} in Popular Culture" }},
-        {{ "day": 13, "title": "Future Trends and Innovations" }},
-        {{ "day": 14, "title": "Review and Assessment" }}
+        {{ "day": 1, "title": "Introduction to {topic}" }},
+        {{ "day": 2, "title": "TITLE FOR DAY 2" }},
+        {{ "day": 3, "title": "TITLE FOR DAY 3" }},
+        {{ "day": 4, "title": "TITLE FOR DAY 4" }},
+        {{ "day": 5, "title": "TITLE FOR DAY 5" }},
+        {{ "day": 6, "title": "TITLE FOR DAY 6" }},
+        {{ "day": 7, "title": "TITLE FOR DAY 7" }},
+        {{ "day": 8, "title": "TITLE FOR DAY 8" }},
+        {{ "day": 9, "title": "TITLE FOR DAY 9" }},
+        {{ "day": 10, "title": "TITLE FOR DAY 10" }},
+        {{ "day": 11, "title": "TITLE FOR DAY 11" }},
+        {{ "day": 12, "title": "TITLE FOR DAY 12" }},
+        {{ "day": 13, "title": "TITLE FOR DAY 13" }},
+        {{ "day": 14, "title": "Mastering Advanced {topic} Concepts" }}
       ]
     }}
     
-    Modify the titles to be specific to {topic} while maintaining the overall structure, but keep the pattern of day 1 being "What Are {topic}?" and day 14 being a review day. Make titles concise and clear.
+    Important guidelines:
+    1. Day 1 should be a true beginner-friendly introduction with no prior knowledge required
+    2. Each subsequent day should build on previous knowledge, gradually increasing in complexity
+    3. The middle days should cover intermediate concepts 
+    4. The later days (10-13) should cover advanced topics and specialized applications
+    5. Day 14 should be an advanced masterclass that brings everything together
+    6. All titles should be specific to {topic}, clear, concise, and descriptive
+    7. Ensure a logical progression of knowledge throughout the 14 days
     '''
     
     async with httpx.AsyncClient() as client:
