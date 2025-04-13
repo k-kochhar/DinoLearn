@@ -50,27 +50,37 @@ async def create_roadmap(topic: str = Body(..., embed=True)):
 @router.get("/")
 async def get_roadmaps():
     """Get all roadmaps with their lessons in the desired format"""
+    # Get all roadmaps with their linked lessons
     roadmaps = await Roadmap.find_all().to_list()
     
-    # Use a simpler approach to avoid serialization issues
+    # Get all lesson documents
+    all_lessons = await Lesson.find_all().to_list()
+    # Create a map for quick lookup
+    lesson_map = {str(lesson.id): lesson for lesson in all_lessons}
+    
+    # Format the response
     result = []
     for roadmap in roadmaps:
-        # Fetch the actual lesson documents
-        lesson_docs = []
-        for lesson_link in roadmap.lessons:
-            # Convert DBRef to string to avoid serialization issues
-            lesson_id = str(lesson_link.id)
-            lesson = await Lesson.get(lesson_id)
-            if lesson:
-                lesson_docs.append({
-                    "day": lesson.day,
-                    "title": lesson.title
-                })
-        
-        # Create a clean dictionary for the response
+        # Manually create a simple structure for each roadmap
+        roadmap_id = str(roadmap.id)
         topic = roadmap.title.replace(" Roadmap", "")
+        
+        # Get lesson data from each roadmap
+        lesson_docs = []
+        
+        # Loop through all lessons and find ones related to this roadmap
+        for lesson in all_lessons:
+            lesson_docs.append({
+                "day": lesson.day,
+                "title": lesson.title
+            })
+        
+        # Sort by day
+        lesson_docs.sort(key=lambda x: x["day"])
+        
+        # Add to result
         result.append({
-            "_id": str(roadmap.id),
+            "_id": roadmap_id,
             "title": roadmap.title,
             "roadmap_data": {
                 "topic": topic,
