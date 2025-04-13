@@ -9,8 +9,8 @@ export default function IntroQuiz({ topic, onComplete }) {
     if (topic) {
       setQuizQuestions([
         `What are the key concepts in ${topic}? you want to learn`,
-        ``,
-        ``,
+        `Explain the importance of ${topic} in real-world applications.`,
+        `How does ${topic} compare to other similar technologies or approaches?`,
       ]);
     }
   }, [topic]);

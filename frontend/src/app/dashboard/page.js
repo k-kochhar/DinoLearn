@@ -36,7 +36,21 @@ export default function Dashboard() {
       course.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const getCourses = () => {
+  const getCourses = async () => {
+    try{
+      const response = await fetch(
+        "https://dinobackend-930h.onrender.com/api/roadmaps",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ topic: topic.trim() }),
+        }
+      );
+    }catch{
+
+    }
     setCourses([
       {
         id: 1,

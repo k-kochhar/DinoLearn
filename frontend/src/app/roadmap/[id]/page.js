@@ -31,30 +31,38 @@ export default function RoadmapPage() {
   useEffect(() => {
     const fetchRoadmap = async () => {
       try {
-        if (id.startsWith("demo-")) {
-          const demoData = localStorage.getItem(`demoRoadmap-${id}`);
-          if (demoData) {
-            setRoadmap(JSON.parse(demoData));
-            setLoading(false);
-            return;
-          }
-        }
-
+        // Grab roadmap by id
         const response = await fetch(
-          `https://dinobackend-930h.onrender.com/api/roadmaps`
+          `https://dinobackend-930h.onrender.com/api/roadmaps/${id}`
         );
-
         if (!response.ok) {
           throw new Error("Failed to fetch roadmaps");
-        }
-
+        }s
         const roadmaps = await response.json();
-        const foundRoadmap = roadmaps.find((r) => r._id === id);
+        console.log(roadmaps);
+        setRoadmap(roadmaps);
+        console.log(roadmap);
 
-        if (foundRoadmap) {
-          setRoadmap(foundRoadmap);
-        } else {
-          setError("Roadmap not found");
+        // Generate the daily lessons
+        for (let i = 0; i < 14; i++) {
+          const payload = {
+            day: i,
+            title: roadmaps.title,
+          };
+
+          const res = await fetch(
+            "https://dinobackend-930h.onrender.com/api/roadmaps/generate",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(payload),
+            }
+          );
+
+          const data = await res.json();
+          console.log(`Generated lesson ${i}:`, data);
         }
       } catch (err) {
         console.error("Error fetching roadmap:", err);
@@ -107,7 +115,7 @@ export default function RoadmapPage() {
             Roadmap Not Found
           </h2>
           <p className="text-[#2C3342]/70 mb-8">
-            We couldn&apos;t find the roadmap you&apos;re looking for.
+            We couldn't find the roadmap you're looking for.
           </p>
           <Link
             href="/create-course"
@@ -149,7 +157,7 @@ export default function RoadmapPage() {
       <main className="max-w-7xl mx-auto py-12 px-6">
         {!quizCompleted ? (
           <IntroQuiz
-            topic={roadmap.title}
+            topic={roadmap.id}
             onComplete={() => setQuizCompleted(true)}
           />
         ) : (
@@ -162,7 +170,7 @@ export default function RoadmapPage() {
                     14-Day Learning Path
                   </span>
                   <h1 className="text-3xl md:text-4xl font-bold text-[#000000] mb-2">
-                    {roadmap.title}
+                    {roadmap.id}
                   </h1>
                   <div className="h-1 w-20 bg-[#E17454]/20 rounded-full mt-4"></div>
                 </div>
@@ -228,9 +236,7 @@ export default function RoadmapPage() {
                       <div className="h-10 w-10 bg-[#9EC1D9]/20 rounded-lg flex items-center justify-center text-[#000000] font-bold">
                         {lesson.day}
                       </div>
-                      <h3 className="font-bold text-[#2C3342]">
-                        {lesson.title}
-                      </h3>
+                      <h3 className="font-bold text-[#2C3342]">{lesson.id}</h3>
                     </div>
 
                     <div className="mt-6">
@@ -265,7 +271,7 @@ export default function RoadmapPage() {
                           </div>
                           <div>
                             <h3 className="font-bold text-[#2C3342]">
-                              Day {lesson.day || index + 1}: {lesson.title}
+                              Day {lesson.day || index + 1}: {lesson.id}
                             </h3>
                           </div>
                         </div>
