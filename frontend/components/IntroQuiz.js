@@ -8,9 +8,9 @@ export default function IntroQuiz({ topic, onComplete }) {
   useEffect(() => {
     if (topic) {
       setQuizQuestions([
-        `What are the key concepts in ${topic}?`,
-        `Explain the importance of ${topic} in real-world applications.`,
-        `How does ${topic} compare to other similar technologies or approaches?`,
+        `What are the key concepts in ${topic}? you want to learn`,
+        ``,
+        ``,
       ]);
     }
   }, [topic]);
