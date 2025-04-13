@@ -11,7 +11,7 @@ import Svg, { Path } from 'react-native-svg';
 type IconType = 'cpu' | 'rocket' | 'cursor' | 'bolt' | 'dino';
 
 interface CourseCardProps {
-  id: number;
+  id: string | number;
   title: string;
   category: string;
   progress: number;
@@ -65,7 +65,7 @@ export function CourseCard({ id, title, category, progress, iconType }: CourseCa
   };
 
   return (
-    <Link href={`/lessons/${id}/1` as any} asChild>
+    <Link href={`/roadmap?topic=${category}`} asChild>
       <TouchableOpacity
         style={[
           styles.container,

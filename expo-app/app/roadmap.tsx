@@ -370,7 +370,18 @@ export default function RoadmapScreen() {
                             status === "current" && { opacity: 0.8 }
                           ]}
                         >
-                          <ArrowRightIcon />
+                          <Svg
+                            width={16}
+                            height={16}
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke={status === "completed" ? DinoLearnColors.skyBlue : DinoLearnColors.burntOrange}
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <Path d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                          </Svg>
                         </View>
                       )}
                     </View>
@@ -492,6 +503,8 @@ const styles = StyleSheet.create({
   },
   lessonCard: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
     borderRadius: 12,
     paddingVertical: 16,
     paddingHorizontal: 20,
@@ -502,12 +515,14 @@ const styles = StyleSheet.create({
     elevation: 2,
     borderLeftWidth: 4,
     borderLeftColor: DinoLearnColors.skyBlue,
+    marginBottom: 16,
   },
   lockedCard: {
     borderLeftColor: DinoLearnColors.lightGray,
     opacity: 0.8,
   },
   lessonContent: {
+    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -527,6 +542,7 @@ const styles = StyleSheet.create({
   },
   lessonArrow: {
     padding: 4,
+    marginLeft: 8,
   },
   currentTag: {
     position: 'absolute',
@@ -563,5 +579,34 @@ const styles = StyleSheet.create({
     color: errorTextColor,
     fontSize: 14,
     fontWeight: '500',
+  },
+  courseTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  courseDescription: {
+    fontSize: 14,
+  },
+  timelineContainer: {
+    paddingTop: 16,
+  },
+  lessonIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  currentLessonCard: {
+    borderLeftColor: DinoLearnColors.burntOrange,
+  },
+  lessonActionContainer: {
+    padding: 8,
+  },
+  lessonActionText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 }); 

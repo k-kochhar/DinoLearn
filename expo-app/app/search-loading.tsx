@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { 
   StyleSheet, 
-  SafeAreaView
+  SafeAreaView,
+  Alert
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -9,6 +10,7 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { DinoHeader } from '@/components/DinoHeader';
 import { LoadingDino } from '@/components/LoadingDino';
+import { fetchRoadmaps } from '@/services/api';
 
 export default function SearchLoadingScreen() {
   const router = useRouter();
@@ -22,22 +24,55 @@ export default function SearchLoadingScreen() {
   // Track loading state
   const [isLoading, setIsLoading] = useState(true);
   
-  // Simulate loading time and then redirect to roadmap
+  // Fetch roadmaps and then redirect to roadmap
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      // First stop the animation
-      setIsLoading(false);
-      
-      // Then wait a brief moment for animation to finish
-      setTimeout(() => {
-        router.replace({
-          pathname: '/roadmap',
-          params: { topic: query }
-        });
-      }, 400);
-    }, 2000); // Show the loading animation for 2 seconds
+    const loadRoadmaps = async () => {
+      try {
+        // Fetch roadmaps from the API
+        await fetchRoadmaps();
+        
+        // Wait a bit for better UX
+        setTimeout(() => {
+          // First stop the animation
+          setIsLoading(false);
+          
+          // Then wait a brief moment for animation to finish
+          setTimeout(() => {
+            router.replace({
+              pathname: '/roadmap',
+              params: { topic: query }
+            });
+          }, 400);
+        }, 1000);
+      } catch (error) {
+        console.error("Error fetching roadmaps:", error);
+        
+        // Stop the loading animation
+        setIsLoading(false);
+        
+        // Show error alert
+        Alert.alert(
+          "Connection Error",
+          "Failed to load roadmaps. Please check your internet connection and try again.",
+          [
+            {
+              text: "Try Again",
+              onPress: () => {
+                setIsLoading(true);
+                loadRoadmaps();
+              }
+            },
+            {
+              text: "Go Back",
+              onPress: () => router.back(),
+              style: "cancel"
+            }
+          ]
+        );
+      }
+    };
     
-    return () => clearTimeout(timeout);
+    loadRoadmaps();
   }, [query]);
   
   return (

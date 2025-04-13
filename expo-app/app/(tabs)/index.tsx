@@ -24,9 +24,10 @@ import { DinoHeader } from '@/components/DinoHeader';
 import { LoadingDino } from '@/components/LoadingDino';
 import { CourseCard } from '@/components/CourseCard';
 import Svg, { Path } from 'react-native-svg';
+import { fetchRoadmaps, RoadmapItem } from '@/services/api';
 
 interface Course {
-  id: number;
+  id: string;
   title: string;
   category: string;
   progress: number;
@@ -43,53 +44,84 @@ export default function Dashboard() {
   const [activeFilter, setActiveFilter] = useState('recent');
   const [courses, setCourses] = useState<Course[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulating data fetch
-    setCourses([
-      {
-        id: 1,
-        title: "Introduction to Dinosaurs",
-        category: "Paleontology",
-        progress: 65,
-        iconType: 'dino'
-      },
-      {
-        id: 2,
-        title: "Introduction to Machine Learning",
-        category: "AI & Data Science",
-        progress: 45,
-        iconType: 'cpu'
-      },
-      {
-        id: 3,
-        title: "Advanced JavaScript Patterns",
-        category: "Web Development",
-        progress: 78,
-        iconType: 'rocket'
-      },
-      {
-        id: 4,
-        title: "UI/UX Design Fundamentals",
-        category: "Design",
-        progress: 23,
-        iconType: 'cursor'
-      },
-      {
-        id: 5,
-        title: "Mobile App Development",
-        category: "App Development",
-        progress: 62,
-        iconType: 'bolt'
-      },
-      {
-        id: 6,
-        title: "Python for Data Analysis",
-        category: "Data Science",
-        progress: 15,
-        iconType: 'cpu'
+    // Fetch roadmaps from the API
+    const loadRoadmaps = async () => {
+      setIsLoading(true);
+      try {
+        const roadmaps = await fetchRoadmaps();
+        
+        // Convert roadmaps to courses format
+        const convertedCourses = roadmaps.map((roadmap: RoadmapItem) => {
+          // Assign an icon type based on the topic name
+          let iconType: Course['iconType'] = 'dino';
+          const topic = roadmap.roadmap_data.topic.toLowerCase();
+          
+          if (topic.includes('machine') || topic.includes('neural') || topic.includes('ai')) {
+            iconType = 'cpu';
+          } else if (topic.includes('web') || topic.includes('sql') || topic.includes('javascript')) {
+            iconType = 'rocket'; 
+          } else if (topic.includes('design') || topic.includes('ui') || topic.includes('ux')) {
+            iconType = 'cursor';
+          } else if (topic.includes('development') || topic.includes('app') || topic.includes('mobile')) {
+            iconType = 'bolt';
+          }
+          
+          return {
+            id: roadmap._id,
+            title: roadmap.title,
+            category: roadmap.roadmap_data.topic,
+            progress: Math.floor(Math.random() * 80), // Random progress for now
+            iconType: iconType
+          };
+        });
+        
+        // If no courses are found or there's an error, add a default course
+        if (convertedCourses.length === 0) {
+          convertedCourses.push({
+            id: '1',
+            title: "Introduction to Dinosaurs",
+            category: "Paleontology",
+            progress: 65,
+            iconType: 'dino'
+          });
+        }
+        
+        setCourses(convertedCourses);
+      } catch (error) {
+        console.error("Error loading roadmaps:", error);
+        // Fallback to hardcoded courses if API fails
+        setCourses([
+          {
+            id: '1',
+            title: "Introduction to Dinosaurs",
+            category: "Paleontology",
+            progress: 65,
+            iconType: 'dino'
+          },
+          {
+            id: '2',
+            title: "Introduction to Machine Learning",
+            category: "AI & Data Science",
+            progress: 45,
+            iconType: 'cpu'
+          },
+          {
+            id: '3',
+            title: "Advanced JavaScript Patterns",
+            category: "Web Development",
+            progress: 78,
+            iconType: 'rocket'
+          }
+        ]);
+      } finally {
+        setIsLoading(false);
       }
-    ]);
+    };
+    
+    loadRoadmaps();
   }, []);
 
   // Filter courses based on search query
@@ -257,23 +289,6 @@ export default function Dashboard() {
               </Text>
               <View style={[styles.titleUnderline, { backgroundColor: DinoLearnColors.burntOrange + '33' }]} />
             </View>
-            
-            <View style={styles.headerRight}>
-              <TouchableOpacity
-                style={styles.viewRoadmapButton}
-                onPress={() => router.push('/roadmap')}
-              >
-                <Text style={styles.viewRoadmapText}>View Roadmap</Text>
-              </TouchableOpacity>
-              
-              {/* API Test Button - for debugging */}
-              <TouchableOpacity
-                style={[styles.viewRoadmapButton, { backgroundColor: DinoLearnColors.burntOrange }]}
-                onPress={() => router.push('/api-test')}
-              >
-                <Text style={styles.viewRoadmapText}>Test API</Text>
-              </TouchableOpacity>
-            </View>
           </View>
           
           {/* Courses */}
@@ -281,8 +296,9 @@ export default function Dashboard() {
             <FlatList
               data={filteredCourses}
               renderItem={renderCourseItem}
-              keyExtractor={(item) => item.id.toString()}
+              keyExtractor={(item) => item.id}
               contentContainerStyle={styles.coursesList}
+              ItemSeparatorComponent={() => <View style={styles.courseDivider} />}
               numColumns={width > 768 ? 2 : 1}
               scrollEnabled={false}
             />
@@ -383,7 +399,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: 16,
-    marginBottom: 24,
+    marginBottom: 8,
   },
   mainTitle: {
     fontSize: 20,
@@ -399,22 +415,6 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
     marginTop: 8,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  viewRoadmapButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    backgroundColor: DinoLearnColors.navyBlue,
-  },
-  viewRoadmapText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
   },
   filtersContainer: {
     flexDirection: 'row',
@@ -441,12 +441,18 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   coursesList: {
-    gap: 20,
+    paddingVertical: 8,
   },
   courseCardWrapper: {
     flex: 1,
     minWidth: 300,
     margin: 8,
+  },
+  courseDivider: {
+    height: 1,
+    backgroundColor: DinoLearnColors.charcoalGray + '20',
+    marginVertical: 12,
+    marginHorizontal: 8,
   },
   emptyStateContainer: {
     padding: 40,

@@ -8,7 +8,7 @@ const MAX_RETRIES = 2;
 const RETRY_DELAY = 1000; // milliseconds
 
 // Flag to use mock data instead of actual API calls
-const USE_MOCK_DATA = true;
+const USE_MOCK_DATA = false;
 
 /**
  * Helper function to add delay
@@ -54,6 +54,15 @@ export interface RoadmapData {
 }
 
 /**
+ * Interface for roadmap item from API
+ */
+export interface RoadmapItem {
+  _id: string;
+  title: string;
+  roadmap_data: RoadmapData;
+}
+
+/**
  * Interface for lesson data
  */
 export interface LessonData {
@@ -87,48 +96,35 @@ export const generateRoadmap = async (topic: string): Promise<RoadmapData> => {
     return dinosaurRoadmap;
   }
   
-  let retries = 0;
-  
-  // Get appropriate API URL
-  const apiUrl = getApiUrl(API_ENDPOINTS.GENERATE_ROADMAP);
-  
-  while (retries <= MAX_RETRIES) {
-    try {
-      console.log(`API call: Generating roadmap for topic "${topic}" (attempt ${retries + 1})`);
-      console.log(`Using endpoint: ${apiUrl}`);
-      
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ topic }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`API error (${response.status}):`, errorText);
-        throw new Error(`API error: ${response.status} - ${errorText}`);
-      }
-
-      const data = await response.json();
-      console.log("Roadmap API response:", JSON.stringify(data).substring(0, 150) + "...");
-      return data;
-    } catch (error) {
-      console.error(`Error generating roadmap (attempt ${retries + 1}):`, error);
-      
-      if (retries === MAX_RETRIES) {
-        throw error;
-      }
-      
-      // Wait before retrying
-      await delay(RETRY_DELAY);
-      retries++;
+  try {
+    // Fetch all roadmaps
+    const roadmaps = await fetchRoadmaps();
+    
+    // Try to find a matching roadmap by topic, case insensitive
+    const matchingRoadmap = roadmaps.find(item => 
+      item.roadmap_data.topic.toLowerCase() === topic.toLowerCase() ||
+      item.title.toLowerCase().includes(topic.toLowerCase())
+    );
+    
+    if (matchingRoadmap) {
+      return matchingRoadmap.roadmap_data;
     }
+    
+    // If no matching roadmap is found, return the first one as default
+    if (roadmaps.length > 0) {
+      console.log(`No roadmap found for topic "${topic}". Using the first available roadmap instead.`);
+      return roadmaps[0].roadmap_data;
+    }
+    
+    // No roadmaps found at all, return fallback
+    console.log(`No roadmaps found. Using fallback dinosaur roadmap.`);
+    return dinosaurRoadmap;
+    
+  } catch (error) {
+    console.error(`Error getting roadmap for topic "${topic}":`, error);
+    // Return fallback data in case of error
+    return dinosaurRoadmap;
   }
-  
-  // This should never be reached but TypeScript requires a return
-  throw new Error("Maximum retries exceeded");
 };
 
 /**
@@ -185,6 +181,54 @@ export const generateLesson = async (
       return data;
     } catch (error) {
       console.error(`Error generating lesson (attempt ${retries + 1}):`, error);
+      
+      if (retries === MAX_RETRIES) {
+        throw error;
+      }
+      
+      // Wait before retrying
+      await delay(RETRY_DELAY);
+      retries++;
+    }
+  }
+  
+  // This should never be reached but TypeScript requires a return
+  throw new Error("Maximum retries exceeded");
+};
+
+/**
+ * Fetch all available roadmaps
+ * @returns A promise with an array of roadmap items
+ */
+export const fetchRoadmaps = async (): Promise<RoadmapItem[]> => {
+  let retries = 0;
+  
+  // Get appropriate API URL
+  const apiUrl = getApiUrl(API_ENDPOINTS.GET_ROADMAPS);
+  
+  while (retries <= MAX_RETRIES) {
+    try {
+      console.log(`API call: Fetching all roadmaps (attempt ${retries + 1})`);
+      console.log(`Using endpoint: ${apiUrl}`);
+      
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`API error (${response.status}):`, errorText);
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log("Roadmaps API response:", JSON.stringify(data).substring(0, 150) + "...");
+      return data;
+    } catch (error) {
+      console.error(`Error fetching roadmaps (attempt ${retries + 1}):`, error);
       
       if (retries === MAX_RETRIES) {
         throw error;
