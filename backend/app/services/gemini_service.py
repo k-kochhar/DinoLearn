@@ -1,6 +1,7 @@
 import httpx
 import os
 import re
+import json
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -13,9 +14,20 @@ async def generate_roadmap_from_gemini(topic: str):
         raise ValueError("GEMINI_API_KEY environment variable is not set or using placeholder value")
         
     print("Gemini API client initialized successfully")
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={api_key}"
     
-    prompt = f'Create a 14-day roadmap for learning about "{topic}". Title each day and explain briefly.'
+    prompt = f'''Create a 14-day roadmap for learning about "{topic}". 
+    Return the result in this specific JSON format:
+    {{
+      "topic": "{topic}",
+      "roadmap": [
+        {{ "day": 1, "title": "First Lesson Title" }},
+        {{ "day": 2, "title": "Second Lesson Title" }},
+        ...and so on for all 14 days
+      ]
+    }}
+    Make sure each title is concise, clear, and represents a logical progression for learning about {topic}.
+    '''
     
     async with httpx.AsyncClient() as client:
         response = await client.post(
@@ -27,16 +39,28 @@ async def generate_roadmap_from_gemini(topic: str):
         
         data = response.json()
         text = data["candidates"][0]["content"]["parts"][0]["text"]
-        lines = [line for line in text.split("\n") if line.strip()]
         
-        # Extract lesson titles, removing day numbers
-        lesson_titles = []
-        for line in lines[:14]:  # Take first 14 lines
+        # Extract JSON from text (sometimes Gemini adds explanations before/after JSON)
+        json_match = re.search(r'({[\s\S]*})', text)
+        if json_match:
+            try:
+                json_data = json.loads(json_match.group(1))
+                # Validate the expected structure
+                if "topic" in json_data and "roadmap" in json_data and len(json_data["roadmap"]) > 0:
+                    return json_data
+            except json.JSONDecodeError:
+                pass  # Fall through to backup plan
+        
+        # Backup: If JSON parsing failed, extract lesson titles manually
+        lines = [line for line in text.split('\n') if line.strip()]
+        roadmap = []
+        
+        for i, line in enumerate(lines[:14]):
             # Remove day numbers like "1." or "Day 1:" from the start
             clean_title = re.sub(r"^\d+\.\s*|^Day\s+\d+[:.]\s*", "", line, flags=re.IGNORECASE)
-            lesson_titles.append(clean_title)
+            roadmap.append({"day": i+1, "title": clean_title})
         
         return {
-            "title": f"{topic} Roadmap",
-            "lesson_titles": lesson_titles
+            "topic": topic,
+            "roadmap": roadmap
         }

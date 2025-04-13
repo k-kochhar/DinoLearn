@@ -1,61 +1,101 @@
 import os
-from openai import AsyncOpenAI
+import json
 from dotenv import load_dotenv
 import re
 
+# Load environment variables
 load_dotenv()
 
-# Get API key from environment variables
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key or api_key == "your_openai_api_key_here":
-    raise ValueError("OPENAI_API_KEY environment variable is not set or using placeholder value")
-
-# Initialize OpenAI client
-client = AsyncOpenAI(api_key=api_key)
-
-# Log API status (securely, without revealing any part of the key)
-print("OpenAI API client initialized successfully")
-
-async def generate_lesson_content(title: str):
-    """Generate detailed lesson content using OpenAI API"""
-    prompt = f"""Generate an in-depth explanation and a quiz with 2 questions for a lesson titled "{title}". Include:
-- Overview
-- Two key questions"""
-
-    response = await client.chat.completions.create(
-        model="gpt-4",
-        messages=[{"role": "user", "content": prompt}],
-    )
-
-    output = response.choices[0].message.content
-    lines = output.split("\n")
+# We'll use Gemini for both roadmap and lesson generation
+async def generate_lesson_content(day: int, title: str):
+    """Generate detailed lesson content using Google's Gemini API"""
+    api_key = os.getenv('GEMINI_API_KEY')
     
-    # Find overview line
-    overview_part = ""
-    for line in lines:
-        if line.strip() and not line.strip().startswith("#"):
-            overview_part = line.replace("Overview: ", "").strip()
-            break
+    if not api_key or api_key == "your_gemini_api_key_here":
+        raise ValueError("GEMINI_API_KEY environment variable is not set or using placeholder value")
     
-    # Extract questions
-    questions = []
-    for line in lines:
-        # Look for numbered questions or bullet points
-        if re.search(r"^\d+\.\s+", line) or line.strip().startswith("- "):
-            # Remove numbers, bullets and clean up
-            clean_question = re.sub(r"^\d+\.\s+|^-\s+", "", line).strip()
-            if clean_question:
-                questions.append(clean_question)
+    import httpx
     
-    # If we couldn't extract questions properly, create default ones
-    if len(questions) < 2:
-        questions = [
-            f"What are the key concepts of {title}?",
-            f"How can you apply {title} in practical scenarios?"
-        ]
+    prompt = f'''Create a detailed lesson for day {day} titled "{title}". 
+    Return the result in this specific JSON format:
+    {{
+      "day": {day},
+      "title": "{title}",
+      "summary": "2-3 sentence summary of what this lesson covers",
+      "lesson": [
+        {{
+          "section": "Introduction",
+          "content": "Main content for this section"
+        }},
+        {{
+          "section": "Key Concepts",
+          "content": "Explanation of key concepts"
+        }},
+        {{
+          "section": "Examples",
+          "content": "Examples illustrating the lesson"
+        }},
+        {{
+          "section": "Practice",
+          "content": "Practice exercises to reinforce learning"
+        }},
+        {{
+          "section": "Summary",
+          "content": "Brief recap of main points"
+        }}
+      ]
+    }}
     
-    return {
-        "title": title,
-        "overview": overview_part,
-        "questions": questions[:2]  # Ensure we only have 2 questions
-    }
+    Make sure the content is educational, accurate, and appropriate for someone learning about this topic.
+    '''
+    
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}"
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            url,
+            json={
+                "contents": [{"parts": [{"text": prompt}]}]
+            }
+        )
+        
+        data = response.json()
+        text = data["candidates"][0]["content"]["parts"][0]["text"]
+        
+        # Extract JSON from text (sometimes Gemini adds explanations before/after JSON)
+        json_match = re.search(r'({[\s\S]*})', text)
+        if json_match:
+            try:
+                json_data = json.loads(json_match.group(1))
+                return json_data
+            except json.JSONDecodeError:
+                pass  # Fall through to backup plan
+        
+        # If JSON parsing failed, create a fallback lesson
+        return {
+            "day": day,
+            "title": title,
+            "summary": f"This lesson introduces key concepts about {title}.",
+            "lesson": [
+                {
+                    "section": "Introduction",
+                    "content": f"Welcome to day {day} of our course. Today we'll learn about {title}."
+                },
+                {
+                    "section": "Key Concepts",
+                    "content": f"The main concepts to understand in {title} include the fundamental principles and applications."
+                },
+                {
+                    "section": "Examples",
+                    "content": "Examples help illustrate the concepts we're learning about."
+                },
+                {
+                    "section": "Practice",
+                    "content": "Try applying what you've learned with these practice exercises."
+                },
+                {
+                    "section": "Summary",
+                    "content": f"Today we explored {title}. Practice these concepts to reinforce your understanding."
+                }
+            ]
+        }

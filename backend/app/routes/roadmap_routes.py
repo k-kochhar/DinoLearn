@@ -18,23 +18,28 @@ async def create_roadmap(topic: str = Body(..., embed=True)):
         # Generate roadmap structure using Gemini
         roadmap_data = await generate_roadmap_from_gemini(topic)
         
-        # Generate lessons using ChatGPT
+        # Generate lessons using Gemini
         lesson_objects = []
-        for title in roadmap_data["lesson_titles"]:
-            lesson_content = await generate_lesson_content(title)
+        for item in roadmap_data["roadmap"]:
+            day = item["day"]
+            title = item["title"]
+            
+            # Generate detailed lesson content
+            lesson_content = await generate_lesson_content(day, title)
             
             # Create and save lesson
             lesson = Lesson(
+                day=lesson_content["day"],
                 title=lesson_content["title"],
-                overview=lesson_content["overview"],
-                questions=lesson_content["questions"]
+                summary=lesson_content["summary"],
+                lesson=lesson_content["lesson"]
             )
             await lesson.insert()
             lesson_objects.append(lesson)
             
         # Create and save roadmap
         roadmap = Roadmap(
-            title=roadmap_data["title"],
+            title=f"{roadmap_data['topic']} Roadmap",
             lessons=lesson_objects
         )
         await roadmap.insert()
