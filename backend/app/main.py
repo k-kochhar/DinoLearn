@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import motor.motor_asyncio
 from beanie import init_beanie
 import os
+import ssl
+import certifi
 from dotenv import load_dotenv
 
 from app.models.lesson import Lesson
@@ -33,7 +35,10 @@ app.add_middleware(
 async def startup_db_client():
     # Get MongoDB URI from environment variable
     mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
-    app.mongodb_client = motor.motor_asyncio.AsyncIOMotorClient(mongo_uri)
+    app.mongodb_client = motor.motor_asyncio.AsyncIOMotorClient(
+        mongo_uri,
+        tlsCAFile=certifi.where()
+    )
     
     # Extract database name from connection string or use default
     if "mongodb+srv://" in mongo_uri and "mongodb.net" in mongo_uri:
