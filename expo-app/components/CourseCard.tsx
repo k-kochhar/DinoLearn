@@ -8,7 +8,7 @@ import { Colors } from '@/constants/Colors';
 // Import SVG icons
 import Svg, { Path } from 'react-native-svg';
 
-type IconType = 'cpu' | 'rocket' | 'cursor' | 'bolt';
+type IconType = 'cpu' | 'rocket' | 'cursor' | 'bolt' | 'dino';
 
 interface CourseCardProps {
   id: number;
@@ -24,6 +24,17 @@ export function CourseCard({ id, title, category, progress, iconType }: CourseCa
 
   const renderIcon = () => {
     switch (iconType) {
+      case 'dino':
+        return (
+          <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={DinoLearnColors.navyBlue} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <Path d="M4 19.5c0-1.657 4.03-3 9-3 4.97 0 9 1.343 9 3v-8c0-1.657-4.03-3-9-3-4.97 0-9 1.343-9 3v8z" />
+            <Path d="M4 12.5v-2C4 8.843 8.03 7.5 13 7.5c4.97 0 9 1.343 9 3v2" />
+            <Path d="M4 9.5v-2C4 5.843 8.03 4.5 13 4.5c4.97 0 9 1.343 9 3v2" />
+            <Path d="M15 4.5v5" />
+            <Path d="M7 8.5v5" />
+            <Path d="M19 8.5v5" />
+          </Svg>
+        );
       case 'cpu':
         return (
           <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={DinoLearnColors.navyBlue} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

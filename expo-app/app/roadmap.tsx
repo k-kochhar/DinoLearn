@@ -194,7 +194,7 @@ export default function RoadmapScreen() {
         <View style={styles.courseHeader}>
           <View style={styles.courseImageContainer}>
             <Image 
-              source={require('@/assets/images/Reading.png')} 
+              source={require('@/assets/images/Standing.png')} 
               style={styles.courseImage}
               resizeMode="contain"
             />

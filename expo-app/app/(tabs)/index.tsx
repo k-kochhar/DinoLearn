@@ -25,7 +25,7 @@ interface Course {
   title: string;
   category: string;
   progress: number;
-  iconType: 'cpu' | 'rocket' | 'cursor' | 'bolt';
+  iconType: 'cpu' | 'rocket' | 'cursor' | 'bolt' | 'dino';
 }
 
 export default function Dashboard() {
@@ -43,59 +43,45 @@ export default function Dashboard() {
     setCourses([
       {
         id: 1,
+        title: "Introduction to Dinosaurs",
+        category: "Paleontology",
+        progress: 65,
+        iconType: 'dino'
+      },
+      {
+        id: 2,
         title: "Introduction to Machine Learning",
         category: "AI & Data Science",
         progress: 45,
         iconType: 'cpu'
       },
       {
-        id: 2,
+        id: 3,
         title: "Advanced JavaScript Patterns",
         category: "Web Development",
         progress: 78,
         iconType: 'rocket'
       },
       {
-        id: 3,
+        id: 4,
         title: "UI/UX Design Fundamentals",
         category: "Design",
         progress: 23,
         iconType: 'cursor'
       },
       {
-        id: 4,
-        title: "Mobile App Development with React Native",
+        id: 5,
+        title: "Mobile App Development",
         category: "App Development",
         progress: 62,
         iconType: 'bolt'
       },
       {
-        id: 5,
+        id: 6,
         title: "Python for Data Analysis",
         category: "Data Science",
         progress: 15,
         iconType: 'cpu'
-      },
-      {
-        id: 6,
-        title: "Modern Frontend Frameworks",
-        category: "Web Development",
-        progress: 90,
-        iconType: 'rocket'
-      },
-      {
-        id: 7,
-        title: "Responsive Web Design Mastery",
-        category: "Design",
-        progress: 38,
-        iconType: 'cursor'
-      },
-      {
-        id: 8,
-        title: "Cloud Computing Essentials",
-        category: "Cloud",
-        progress: 55,
-        iconType: 'bolt'
       }
     ]);
   }, []);
@@ -227,49 +213,6 @@ export default function Dashboard() {
                 <Text style={styles.viewRoadmapText}>View Roadmap</Text>
               </TouchableOpacity>
               
-              <View style={[styles.filtersContainer, { backgroundColor: DinoLearnColors.lightGray }]}>
-                <TouchableOpacity
-                  style={[
-                    styles.filterButton,
-                    activeFilter === 'recent' && [
-                      styles.activeFilterButton,
-                      { backgroundColor: DinoLearnColors.burntOrange }
-                    ]
-                  ]}
-                  onPress={() => setActiveFilter('recent')}
-                >
-                  <ClockIcon />
-                  <Text
-                    style={[
-                      styles.filterText,
-                      { color: activeFilter === 'recent' ? 'white' : DinoLearnColors.navyBlue }
-                    ]}
-                  >
-                    Recent
-                  </Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity
-                  style={[
-                    styles.filterButton,
-                    activeFilter === 'popular' && [
-                      styles.activeFilterButton,
-                      { backgroundColor: DinoLearnColors.burntOrange }
-                    ]
-                  ]}
-                  onPress={() => setActiveFilter('popular')}
-                >
-                  <StarIcon />
-                  <Text
-                    style={[
-                      styles.filterText,
-                      { color: activeFilter === 'popular' ? 'white' : DinoLearnColors.navyBlue }
-                    ]}
-                  >
-                    Popular
-                  </Text>
-                </TouchableOpacity>
-              </View>
             </View>
           </View>
           
