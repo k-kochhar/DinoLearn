@@ -16,17 +16,30 @@ async def generate_roadmap_from_gemini(topic: str):
     print("Gemini API client initialized successfully")
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={api_key}"
     
-    prompt = f'''Create a 14-day roadmap for learning about "{topic}". 
-    Return the result in this specific JSON format:
+    prompt = f'''Create a 14-day roadmap for learning about "{topic}".
+    
+    Return ONLY the following JSON format with no explanations before or after:
     {{
       "topic": "{topic}",
       "roadmap": [
-        {{ "day": 1, "title": "First Lesson Title" }},
-        {{ "day": 2, "title": "Second Lesson Title" }},
-        ...and so on for all 14 days
+        {{ "day": 1, "title": "What Are {topic}?" }},
+        {{ "day": 2, "title": "History and Origins of {topic}" }},
+        {{ "day": 3, "title": "Fundamental Concepts of {topic}" }},
+        {{ "day": 4, "title": "Key Components of {topic}" }},
+        {{ "day": 5, "title": "Important Types and Categories" }},
+        {{ "day": 6, "title": "Advanced Concepts in {topic}" }},
+        {{ "day": 7, "title": "Practical Applications of {topic}" }},
+        {{ "day": 8, "title": "Evolution and Development" }},
+        {{ "day": 9, "title": "Research Methods and Discoveries" }},
+        {{ "day": 10, "title": "Challenges and Solutions" }},
+        {{ "day": 11, "title": "Modern Developments" }},
+        {{ "day": 12, "title": "{topic} in Popular Culture" }},
+        {{ "day": 13, "title": "Future Trends and Innovations" }},
+        {{ "day": 14, "title": "Review and Assessment" }}
       ]
     }}
-    Make sure each title is concise, clear, and represents a logical progression for learning about {topic}.
+    
+    Modify the titles to be specific to {topic} while maintaining the overall structure, but keep the pattern of day 1 being "What Are {topic}?" and day 14 being a review day. Make titles concise and clear.
     '''
     
     async with httpx.AsyncClient() as client:
