@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   StyleSheet, 
   View, 
@@ -7,18 +7,25 @@ import {
   ScrollView,
   SafeAreaView,
   Image,
-  Alert
+  Alert,
+  ActivityIndicator
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { DinoLearnColors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { DinoHeader } from '@/components/DinoHeader';
 import Svg, { Path } from 'react-native-svg';
+import { generateRoadmap, RoadmapData } from '@/services/api';
 
-// Hardcoded roadmap data
-const roadmapData = {
+// Define missing colors
+const primaryColor = DinoLearnColors.navyBlue; // Using navyBlue as primary color
+const errorBackgroundColor = '#FEE2E2'; // Light red background for errors
+const errorTextColor = '#DC2626'; // Red text color for errors
+
+// Fallback roadmap data (used when API fails)
+const fallbackRoadmapData = {
   "topic": "Dinosaurs",
   "roadmap": [
     { "day": 1, "title": "What Are Dinosaurs?" },
@@ -101,11 +108,45 @@ const lessonData = {
 
 export default function RoadmapScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   
+  // Get topic from navigation params or use default
+  const topic = params.topic ? String(params.topic) : "Dinosaurs";
+  
   // In a real app, this would be persisted in storage or backend
   const [currentProgress, setCurrentProgress] = useState(3); // User has completed days 1 & 2, currently on day 3
+  
+  // State for roadmap data
+  const [roadmapData, setRoadmapData] = useState<RoadmapData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Fetch roadmap data on component mount or when topic changes
+  useEffect(() => {
+    const fetchRoadmap = async () => {
+      setIsLoading(true);
+      try {
+        // Use the topic from params
+        const data = await generateRoadmap(topic);
+        setRoadmapData(data);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to fetch roadmap:", err);
+        setError("Failed to load roadmap. Using offline content instead.");
+        // Use fallback data but update the topic
+        setRoadmapData({
+          ...fallbackRoadmapData,
+          topic: topic
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchRoadmap();
+  }, [topic]);
   
   // Icons
   const LockIcon = () => (
@@ -155,10 +196,19 @@ export default function RoadmapScreen() {
 
   const handleLessonPress = (day: number) => {
     if (day <= currentProgress) {
+      // Get the title for the day, safely handling null roadmapData
+      const dayTitle = roadmapData?.roadmap && roadmapData.roadmap.length >= day
+        ? roadmapData.roadmap[day-1]?.title
+        : fallbackRoadmapData.roadmap[day-1]?.title || "";
+        
       // Navigate to the lesson page with the day parameter
       router.push({
         pathname: '/lesson',
-        params: { day }
+        params: { 
+          day,
+          topic: roadmapData?.topic || topic,
+          title: dayTitle
+        }
       });
     } else {
       Alert.alert(
@@ -179,6 +229,26 @@ export default function RoadmapScreen() {
     }
   };
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+        <DinoHeader showBackButton={true} backRoute="/(tabs)" title="Loading Roadmap..." />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={primaryColor} />
+          <Text style={[styles.loadingText, { color: colors.text }]}>
+            Loading your roadmap...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Safety check - use fallback if roadmapData is still null after loading
+  const displayRoadmap = roadmapData || fallbackRoadmapData;
+
+  // Render main content if data is available
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
@@ -186,8 +256,14 @@ export default function RoadmapScreen() {
       <DinoHeader 
         showBackButton={true} 
         backRoute="/(tabs)" 
-        title="Dinosaurs Roadmap" 
+        title={`${displayRoadmap.topic} Roadmap`} 
       />
+      
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
       
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Course Header */}
@@ -202,10 +278,10 @@ export default function RoadmapScreen() {
           
           <View style={styles.courseInfo}>
             <Text style={[styles.courseTopic, { color: colors.primary }]}>
-              {roadmapData.topic}
+              {displayRoadmap.topic}
             </Text>
             <Text style={[styles.courseProgress, { color: colors.text + 'CC' }]}>
-              {Math.floor((currentProgress - 1) / roadmapData.roadmap.length * 100)}% Complete
+              {Math.floor((currentProgress - 1) / displayRoadmap.roadmap.length * 100)}% Complete
             </Text>
             
             <View style={[styles.progressBar, { backgroundColor: DinoLearnColors.lightGray }]}>
@@ -213,7 +289,7 @@ export default function RoadmapScreen() {
                 style={[
                   styles.progressFill, 
                   { 
-                    width: `${Math.floor((currentProgress - 1) / roadmapData.roadmap.length * 100)}%`,
+                    width: `${Math.floor((currentProgress - 1) / displayRoadmap.roadmap.length * 100)}%`,
                     backgroundColor: DinoLearnColors.burntOrange 
                   }
                 ]} 
@@ -229,13 +305,13 @@ export default function RoadmapScreen() {
           </Text>
           
           <View style={styles.roadmapTimeline}>
-            {roadmapData.roadmap.map((lesson, index) => {
+            {displayRoadmap.roadmap.map((lesson, index) => {
               const status = getLessonStatus(lesson.day);
               
               return (
                 <View key={lesson.day} style={styles.timelineItem}>
                   {/* Connector Line */}
-                  {index < roadmapData.roadmap.length - 1 && (
+                  {index < displayRoadmap.roadmap.length - 1 && (
                     <View 
                       style={[
                         styles.connector, 
@@ -484,5 +560,27 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
     fontWeight: '600',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: 16,
+  },
+  errorContainer: {
+    padding: 16,
+    backgroundColor: errorBackgroundColor,
+    borderRadius: 8,
+    marginHorizontal: 16,
+    marginBottom: 24,
+  },
+  errorText: {
+    color: errorTextColor,
+    fontSize: 14,
+    fontWeight: '500',
   },
 }); 

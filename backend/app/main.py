@@ -7,9 +7,10 @@ import ssl
 import certifi
 from dotenv import load_dotenv
 
-from app.models.lesson import Lesson
-from app.models.roadmap import Roadmap
-from app.routes import lesson_routes, roadmap_routes
+# Use relative imports instead of absolute imports
+from .models.lesson import Lesson
+from .models.roadmap import Roadmap
+from .routes import lesson_routes, roadmap_routes
 
 # Load environment variables
 load_dotenv()

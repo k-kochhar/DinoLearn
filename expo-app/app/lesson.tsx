@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   StyleSheet, 
   View, 
@@ -6,7 +6,8 @@ import {
   TouchableOpacity, 
   ScrollView,
   SafeAreaView,
-  Alert
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -15,9 +16,16 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { DinoHeader } from '@/components/DinoHeader';
 import Svg, { Path } from 'react-native-svg';
+import { generateLesson, LessonData } from '@/services/api';
 
-// Sample lesson data
-const lessonData = {
+// Define missing colors
+const primaryColor = DinoLearnColors.navyBlue; // Using navyBlue as primary color
+const errorBackgroundColor = '#FEE2E2'; // Light red background for errors
+const errorTextColor = '#DC2626'; // Red text color for errors
+
+// Sample lesson data (fallback when API fails)
+const fallbackLessonData = {
+  "topic": "Dinosaurs",
   "day": 1,
   "title": "What Are Dinosaurs?",
   "summary": "This lesson introduces dinosaurs, explaining what makes them unique among reptiles. You'll learn about their defining features, how they lived, and why they continue to fascinate scientists and the public today.",
@@ -89,19 +97,58 @@ export default function LessonScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   
-  // In a real app, we would fetch the lesson data based on the day param
+  // Get parameters from navigation
   const day = params.day ? Number(params.day) : 1;
+  const topic = params.topic ? String(params.topic) : "Dinosaurs";
+  const title = params.title ? String(params.title) : "";
+  
+  console.log(`Loading lesson for topic: ${topic}, day: ${day}, title: ${title}`);
+  
+  // State for API data
+  const [lessonData, setLessonData] = useState<LessonData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   // Track the state of each question (selected answer, revealed state)
-  const [questionsState, setQuestionsState] = useState<Record<number, QuestionState>>(
-    lessonData.lesson.reduce((acc, _, index) => {
-      acc[index] = { selectedAnswer: null, isRevealed: false, isCorrect: null };
-      return acc;
-    }, {} as Record<number, QuestionState>)
-  );
+  const [questionsState, setQuestionsState] = useState<Record<number, QuestionState>>({});
   
   // Track lesson progress
   const [progress, setProgress] = useState(0);
+  
+  // Fetch lesson data when component mounts or params change
+  useEffect(() => {
+    const fetchLesson = async () => {
+      setIsLoading(true);
+      try {
+        const data = await generateLesson(topic, day, title);
+        setLessonData(data);
+        
+        // Initialize question states
+        setQuestionsState(data.lesson.reduce((acc, _, index) => {
+          acc[index] = { selectedAnswer: null, isRevealed: false, isCorrect: null };
+          return acc;
+        }, {} as Record<number, QuestionState>));
+        
+        setError(null);
+      } catch (err) {
+        console.error("Failed to fetch lesson:", err);
+        setError("Failed to load lesson. Using offline content instead.");
+        
+        // Use fallback data
+        setLessonData(fallbackLessonData);
+        
+        // Initialize question states with fallback data
+        setQuestionsState(fallbackLessonData.lesson.reduce((acc, _, index) => {
+          acc[index] = { selectedAnswer: null, isRevealed: false, isCorrect: null };
+          return acc;
+        }, {} as Record<number, QuestionState>));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchLesson();
+  }, [day, topic, title]);
   
   // Icons
   const CheckCircleIcon = () => (
@@ -135,7 +182,7 @@ export default function LessonScreen() {
   );
   
   const handleSelectAnswer = (questionIndex: number, answer: string) => {
-    if (questionsState[questionIndex].isRevealed) return;
+    if (!lessonData || !questionsState[questionIndex] || questionsState[questionIndex].isRevealed) return;
     
     setQuestionsState(prev => ({
       ...prev,
@@ -147,6 +194,8 @@ export default function LessonScreen() {
   };
   
   const handleCheckAnswer = (questionIndex: number) => {
+    if (!lessonData) return;
+    
     const correctAnswer = lessonData.lesson[questionIndex].question.answer;
     const selectedAnswer = questionsState[questionIndex].selectedAnswer;
     const isCorrect = selectedAnswer === correctAnswer;
@@ -181,14 +230,39 @@ export default function LessonScreen() {
   };
   
   const isOptionCorrect = (questionIndex: number, option: string) => {
-    return questionsState[questionIndex].isRevealed && option === lessonData.lesson[questionIndex].question.answer;
+    if (!lessonData) return false;
+    return questionsState[questionIndex]?.isRevealed && option === lessonData.lesson[questionIndex].question.answer;
   };
   
   const isOptionIncorrect = (questionIndex: number, option: string) => {
-    return questionsState[questionIndex].isRevealed && 
-           questionsState[questionIndex].selectedAnswer === option && 
+    if (!lessonData) return false;
+    return questionsState[questionIndex]?.isRevealed && 
+           questionsState[questionIndex]?.selectedAnswer === option && 
            option !== lessonData.lesson[questionIndex].question.answer;
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+        <DinoHeader 
+          showBackButton={true}
+          backRoute="/roadmap"
+          title={`Loading Day ${day}...`}
+        />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={primaryColor} />
+          <Text style={[styles.loadingText, { color: colors.text }]}>
+            Loading your lesson...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+  
+  // Safety check - use fallback if lessonData is still null after loading
+  const displayLesson = lessonData || fallbackLessonData;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -197,14 +271,20 @@ export default function LessonScreen() {
       <DinoHeader 
         showBackButton={true}
         backRoute="/roadmap"
-        title={`Day ${day}: ${lessonData.title}`}
+        title={`Day ${displayLesson.day}: ${displayLesson.title}`}
       />
+      
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
       
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Lesson Title and Summary */}
         <View style={[styles.titleContainer, { backgroundColor: DinoLearnColors.navyBlue }]}>
-          <Text style={styles.title}>{lessonData.title}</Text>
-          <Text style={styles.summary}>{lessonData.summary}</Text>
+          <Text style={styles.title}>{displayLesson.title}</Text>
+          <Text style={styles.summary}>{displayLesson.summary}</Text>
         </View>
         
         {/* Progress Tracker */}
@@ -226,7 +306,7 @@ export default function LessonScreen() {
         
         {/* Lesson Content */}
         <View style={styles.lessonContent}>
-          {lessonData.lesson.map((section, index) => (
+          {displayLesson.lesson.map((section, index) => (
             <View key={index} style={[styles.sectionCard, { backgroundColor: colors.card }]}>
               {/* Reading Section */}
               <View style={styles.readingSection}>
@@ -545,6 +625,27 @@ const styles = StyleSheet.create({
   completeButtonText: {
     color: 'white',
     fontSize: 16,
+    fontWeight: '600',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: 16,
+  },
+  errorContainer: {
+    padding: 16,
+    backgroundColor: errorBackgroundColor,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  errorText: {
+    color: errorTextColor,
+    fontSize: 15,
     fontWeight: '600',
   },
 }); 
