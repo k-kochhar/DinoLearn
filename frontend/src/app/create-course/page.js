@@ -109,17 +109,17 @@ export default function CreateCourse() {
                   priority
                 />
               </div>
-              <span className="text-xl font-bold text-[#43587C]">DinoLearn</span>
+              <span className="text-xl font-bold text-[#000000]">DinoLearn</span>
             </Link>
           </div>
           
           <nav className="hidden md:flex items-center gap-8">
             <Link href="/dashboard" className="text-[#2C3342] hover:text-[#E17454] transition-colors">Dashboard</Link>
             <Link href="/my-courses" className="text-[#2C3342] hover:text-[#E17454] transition-colors">My Courses</Link>
-            <Link href="/create-course" className="text-[#43587C] font-bold border-b-2 border-[#E17454] pb-1">Create Course</Link>
+            <Link href="/create-course" className="text-[#000000] font-bold border-b-2 border-[#E17454] pb-1">Create Course</Link>
             <div className="flex items-center gap-2 bg-white py-1.5 px-3 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer">
               <div className="h-9 w-9 bg-[#9EC1D9] rounded-full flex items-center justify-center">
-                <span className="text-[#43587C] font-medium">KS</span>
+                <span className="text-[#000000] font-medium">KS</span>
               </div>
               <span className="text-[#2C3342] hidden sm:inline font-medium">Kshitij</span>
               <ChevronDownIcon className="h-4 w-4 text-[#2C3342]/70" />
@@ -129,7 +129,7 @@ export default function CreateCourse() {
           <div className="md:hidden flex items-center gap-4">
             <div className="flex items-center gap-2 bg-white py-1.5 px-2 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer">
               <div className="h-8 w-8 bg-[#9EC1D9] rounded-full flex items-center justify-center">
-                <span className="text-[#43587C] font-medium">KS</span>
+                <span className="text-[#000000] font-medium">KS</span>
               </div>
               <ChevronDownIcon className="h-4 w-4 text-[#2C3342]/70" />
             </div>
@@ -141,7 +141,7 @@ export default function CreateCourse() {
       <main className="max-w-7xl mx-auto py-12 px-6">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-[#43587C] mb-4">Create a New Learning Path</h1>
+            <h1 className="text-4xl font-bold text-[#000000] mb-4">Create a New Learning Path</h1>
             <p className="text-[#2C3342]/70 text-lg">
               Our AI will generate a personalized 14-day learning roadmap based on your topic of interest.
             </p>
@@ -195,7 +195,7 @@ export default function CreateCourse() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-[#F5F5F5] rounded-xl p-6 border border-gray-100">
               <div className="h-12 w-12 bg-[#9EC1D9]/30 rounded-lg flex items-center justify-center mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6 text-[#43587C]">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6 text-[#000000]">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" />
                 </svg>
               </div>
@@ -207,7 +207,7 @@ export default function CreateCourse() {
             
             <div className="bg-[#F5F5F5] rounded-xl p-6 border border-gray-100">
               <div className="h-12 w-12 bg-[#9EC1D9]/30 rounded-lg flex items-center justify-center mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6 text-[#43587C]">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6 text-[#000000]">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
               </div>
@@ -219,7 +219,7 @@ export default function CreateCourse() {
             
             <div className="bg-[#F5F5F5] rounded-xl p-6 border border-gray-100">
               <div className="h-12 w-12 bg-[#9EC1D9]/30 rounded-lg flex items-center justify-center mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6 text-[#43587C]">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6 text-[#000000]">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.5 20.25l-.259-1.035a3.375 3.375 0 0 0-2.456-2.456L12.75 16.5l1.035-.259a3.375 3.375 0 0 0 2.456-2.456L16.5 12.75l.259 1.035a3.375 3.375 0 0 0 2.456 2.456l1.035.259-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z" />
                 </svg>
               </div>
@@ -231,7 +231,7 @@ export default function CreateCourse() {
             
             <div className="bg-[#F5F5F5] rounded-xl p-6 border border-gray-100">
               <div className="h-12 w-12 bg-[#9EC1D9]/30 rounded-lg flex items-center justify-center mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6 text-[#43587C]">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6 text-[#000000]">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.042 21.672 13.684 16.6m0 0-2.51 2.225.569-9.47 5.227 7.917-3.286-.672Zm-7.518-.267A8.25 8.25 0 1 1 20.25 10.5M8.288 14.212A5.25 5.25 0 1 1 17.25 10.5" />
                 </svg>
               </div>
