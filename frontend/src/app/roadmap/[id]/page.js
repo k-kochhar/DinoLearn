@@ -35,13 +35,13 @@ export default function RoadmapPage() {
         const response = await fetch(
           `https://dinobackend-930h.onrender.com/api/roadmaps/${id}`
         );
+
         if (!response.ok) {
           throw new Error("Failed to fetch roadmaps");
-        }s
+        }
         const roadmaps = await response.json();
         console.log(roadmaps);
         setRoadmap(roadmaps);
-        console.log(roadmap);
 
         // Generate the daily lessons
         for (let i = 0; i < 14; i++) {
@@ -62,7 +62,6 @@ export default function RoadmapPage() {
           );
 
           const data = await res.json();
-          console.log(`Generated lesson ${i}:`, data);
         }
       } catch (err) {
         console.error("Error fetching roadmap:", err);
