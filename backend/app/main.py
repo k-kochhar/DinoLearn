@@ -82,6 +82,13 @@ app.include_router(
 async def root():
     return {"message": "Welcome to DinoLearn API. Visit /docs for API documentation."}
 
+from app.routes import test_apis
+app.include_router(test_apis.router, tags=["testing"])
+
+from app.routes import lesson_routes
+app.include_router(lesson_routes.router, prefix="/api/lessons", tags=["lessons"])
+
+
 # Run the application 
 if __name__ == "__main__":
     import uvicorn
