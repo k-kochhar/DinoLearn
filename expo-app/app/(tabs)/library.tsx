@@ -16,7 +16,7 @@ export default function LibraryScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       
-      <DinoHeader currentScreen="library" />
+      <DinoHeader onMenuPress={() => {/* Handle menu press */}} />
       
       <View style={styles.content}>
         <View style={[styles.card, { backgroundColor: colors.card }]}>
