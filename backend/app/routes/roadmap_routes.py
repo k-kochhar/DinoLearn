@@ -56,7 +56,7 @@ async def get_roadmaps():
     result = []
     for roadmap in roadmaps:
         roadmap_id = str(roadmap.id)
-        topic = roadmap.title.replace(" Roadmap", "")
+        topic = roadmap.title.replace("Roadmap", "")
         
         # Collect the actual lessons from the database for this roadmap
         roadmap_items = []
