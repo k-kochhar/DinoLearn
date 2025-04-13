@@ -49,33 +49,49 @@ async def create_roadmap(topic: str = Body(..., embed=True)):
 
 @router.get("/")
 async def get_roadmaps():
-    """Get all roadmaps with a mock roadmap_data structure"""
-    # Just get the roadmap titles
+    """Get all roadmaps with their actual lesson data"""
+    # Get all roadmaps and their lessons
     roadmaps = await Roadmap.find_all().to_list()
     
-    # Create a completely hardcoded response with formatted data
     result = []
     for roadmap in roadmaps:
         roadmap_id = str(roadmap.id)
         topic = roadmap.title.replace(" Roadmap", "")
         
-        # Create sample roadmap data with 14 days
-        roadmap_items = [
-            {"day": 1, "title": f"What Are {topic}?"},
-            {"day": 2, "title": f"History and Origins of {topic}"},
-            {"day": 3, "title": f"Fundamental Concepts of {topic}"},
-            {"day": 4, "title": f"Key Components of {topic}"},
-            {"day": 5, "title": f"Important Types and Categories of {topic}"},
-            {"day": 6, "title": f"Advanced Concepts in {topic}"},
-            {"day": 7, "title": f"Practical Applications of {topic}"},
-            {"day": 8, "title": f"Evolution and Development of {topic}"},
-            {"day": 9, "title": f"Research Methods and Discoveries in {topic}"},
-            {"day": 10, "title": f"Challenges and Solutions in {topic}"},
-            {"day": 11, "title": f"Modern Developments in {topic}"},
-            {"day": 12, "title": f"{topic} in Popular Culture"},
-            {"day": 13, "title": f"Future Trends and Innovations in {topic}"},
-            {"day": 14, "title": f"Review and Assessment of {topic}"}
-        ]
+        # Collect the actual lessons from the database for this roadmap
+        roadmap_items = []
+        
+        # Sort lessons by day if they exist
+        if roadmap.lessons:
+            # Fetch all lessons and convert to regular Python objects
+            lessons = []
+            for lesson_link in roadmap.lessons:
+                # Get the lesson document by ID
+                lesson = await Lesson.get(lesson_link.id)
+                if lesson:
+                    lessons.append({
+                        "day": lesson.day,
+                        "title": lesson.title
+                    })
+            
+            # Sort by day number
+            roadmap_items = sorted(lessons, key=lambda x: x["day"])
+        
+        # If no lessons found (which shouldn't happen), generate some using the API
+        if not roadmap_items:
+            # Regenerate roadmap data using the Gemini API
+            try:
+                generated_data = await generate_roadmap_from_gemini(topic)
+                roadmap_items = generated_data["roadmap"]
+            except Exception as e:
+                # Fallback to a generic structure if API fails
+                roadmap_items = [
+                    {"day": 1, "title": f"Introduction to {topic}"},
+                    {"day": 14, "title": f"Mastering Advanced {topic} Concepts"}
+                ]
+                # Add some generic days in between
+                for i in range(2, 14):
+                    roadmap_items.append({"day": i, "title": f"Learning {topic}: Day {i}"})
         
         result.append({
             "_id": roadmap_id,
