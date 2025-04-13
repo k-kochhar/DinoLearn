@@ -1,46 +1,49 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Body, status
 from app.models.lesson import Lesson
 from app.services.chatgpt_service import generate_lesson_plan_and_quiz
 from bson import ObjectId
 
 router = APIRouter()
 
-@router.post("/{lesson_id}/generate")
-async def generate_lesson_details(lesson_id: str):
-    """Generate full lesson + quiz for a given lesson ID"""
+@router.post("/generate")
+async def generate_lesson_by_day(
+    day: int = Body(...),
+    title: str = Body(...),
+    topic: str = Body(...)
+):
+    """
+    Generate or fetch detailed lesson + quiz by day/title/topic
+    """
     try:
-        lesson_collection = Lesson.get_motor_collection()
-        lesson_data = await lesson_collection.find_one({"_id": ObjectId(lesson_id)})
+        # Check if a lesson already exists with same day/title/topic
+        existing_lesson = await Lesson.find_one({
+            "day": day,
+            "title": title
+        })
 
-        if not lesson_data:
-            raise HTTPException(status_code=404, detail="Lesson not found")
+        if existing_lesson and existing_lesson.lesson:
+            return existing_lesson
 
-        # If lesson already generated, return it
-        if lesson_data.get("lesson") and len(lesson_data["lesson"]) > 0:
-            return lesson_data
+        # Generate new lesson using ChatGPT
+        lesson_data = await generate_lesson_plan_and_quiz(day, title, topic)
 
-        # Generate lesson
-        day = lesson_data["day"]
-        title = lesson_data["title"]
-        topic = title.split(":")[0]  # crude fallback
-
-        from app.services.chatgpt_service import generate_lesson_plan_and_quiz
-        lesson_full = await generate_lesson_plan_and_quiz(day, title, topic)
-
-        # Update the database
-        await lesson_collection.update_one(
-            {"_id": ObjectId(lesson_id)},
-            {"$set": {
-                "summary": lesson_full["summary"],
-                "lesson": lesson_full["lesson"],
-                "quiz": lesson_full["quiz"]
-            }}
-        )
-
-        return lesson_full
+        # Save new lesson if not found
+        if not existing_lesson:
+            new_lesson = Lesson(**lesson_data)
+            await new_lesson.insert()
+            return new_lesson
+        else:
+            # Update existing placeholder
+            existing_lesson.summary = lesson_data["summary"]
+            existing_lesson.lesson = lesson_data["lesson"]
+            existing_lesson.quiz = lesson_data["quiz"]
+            await existing_lesson.save()
+            return existing_lesson
 
     except Exception as e:
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Error generating lesson: {str(e)}")
-
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating lesson for Day {day}: {str(e)}"
+        )
