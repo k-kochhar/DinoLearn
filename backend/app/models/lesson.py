@@ -7,6 +7,7 @@ class Lesson(Document):
     title: str
     summary: str
     lesson: List[dict]
+    completed: bool
     
     class Settings:
         name = "lessons"

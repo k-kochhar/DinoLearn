@@ -35,7 +35,7 @@ export default function RoadmapPage() {
         const response = await fetch(
           `https://dinobackend-930h.onrender.com/api/roadmaps/${id}`
         );
-
+        console.log(response);
         if (!response.ok) {
           throw new Error("Failed to fetch roadmaps");
         }
