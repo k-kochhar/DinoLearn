@@ -31,18 +31,39 @@ export default function RoadmapPage() {
   useEffect(() => {
     const fetchRoadmap = async () => {
       try {
-        console.log(id);
+        // Grab roadmap by id
         const response = await fetch(
-          `https://dinobackend-930h.onrender.com/api/roadmaps/?id=${id}`
+          `https://dinobackend-930h.onrender.com/api/roadmaps/${id}`
         );
-
         if (!response.ok) {
           throw new Error("Failed to fetch roadmaps");
-        }
-
+        }s
         const roadmaps = await response.json();
-        console.log(roadmap);
+        console.log(roadmaps);
         setRoadmap(roadmaps);
+        console.log(roadmap);
+
+        // Generate the daily lessons
+        for (let i = 0; i < 14; i++) {
+          const payload = {
+            day: i,
+            title: roadmaps.title,
+          };
+
+          const res = await fetch(
+            "https://dinobackend-930h.onrender.com/api/roadmaps/generate",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(payload),
+            }
+          );
+
+          const data = await res.json();
+          console.log(`Generated lesson ${i}:`, data);
+        }
       } catch (err) {
         console.error("Error fetching roadmap:", err);
         setError("Failed to load roadmap. " + err.message);

@@ -100,7 +100,7 @@ async def get_roadmaps(title: Optional[str] = None):
             detail=f"Error retrieving roadmaps: {str(e)}"
         )
 
-@router.get("/{roadmap_id}")
+@router.get("/")
 async def get_roadmap_by_id(roadmap_id: str):
     """Retrieve a specific roadmap by its ID"""
     try:
