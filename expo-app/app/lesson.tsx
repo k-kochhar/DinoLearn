@@ -6,17 +6,18 @@ import {
   TouchableOpacity, 
   ScrollView,
   SafeAreaView,
-  Alert,
-  ActivityIndicator
+  Alert
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { DinoLearnColors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
 import { DinoHeader } from '@/components/DinoHeader';
+import { LoadingDino } from '@/components/LoadingDino';
 import Svg, { Path } from 'react-native-svg';
 import { generateLesson, LessonData } from '@/services/api';
+import { dinosaurLessons } from '@/services/mock-data';
 
 // Define missing colors
 const primaryColor = DinoLearnColors.navyBlue; // Using navyBlue as primary color
@@ -24,65 +25,10 @@ const errorBackgroundColor = '#FEE2E2'; // Light red background for errors
 const errorTextColor = '#DC2626'; // Red text color for errors
 
 // Sample lesson data (fallback when API fails)
-const fallbackLessonData = {
-  "topic": "Dinosaurs",
-  "day": 1,
-  "title": "What Are Dinosaurs?",
-  "summary": "This lesson introduces dinosaurs, explaining what makes them unique among reptiles. You'll learn about their defining features, how they lived, and why they continue to fascinate scientists and the public today.",
-  "lesson": [
-    {
-      "paragraph": "Dinosaurs were a diverse group of reptiles that lived during the Mesozoic Era, which lasted from about 252 to 66 million years ago. They ranged widely in size, from small chicken-sized creatures to enormous long-necked giants. Unlike other reptiles, dinosaurs had an upright stance, with legs positioned directly beneath their bodies, which made them more agile and powerful.",
-      "question": {
-        "prompt": "What physical trait helped set dinosaurs apart from other reptiles?",
-        "options": [
-          "Having flippers instead of legs",
-          "Legs positioned directly beneath their bodies",
-          "Cold-blooded metabolism",
-          "Ability to fly"
-        ],
-        "answer": "Legs positioned directly beneath their bodies"
-      }
-    },
-    {
-      "paragraph": "The term 'dinosaur' comes from the Greek words 'deinos' meaning terrible, and 'sauros' meaning lizard. However, dinosaurs were not lizards. They were a unique group of reptiles with distinctive hips and limb structures. Some were herbivores, others were carnivores, and they adapted to a wide range of environments across the planet.",
-      "question": {
-        "prompt": "What does the word 'dinosaur' mean in Greek?",
-        "options": [
-          "Fast predator",
-          "Old reptile",
-          "Terrible lizard",
-          "Big monster"
-        ],
-        "answer": "Terrible lizard"
-      }
-    },
-    {
-      "paragraph": "Dinosaurs lived during three major periods within the Mesozoic Era: the Triassic, Jurassic, and Cretaceous. During these times, they evolved and diversified into thousands of species. While some dinosaurs were fierce predators, others were peaceful plant-eaters, traveling in herds and caring for their young.",
-      "question": {
-        "prompt": "During which era did dinosaurs live?",
-        "options": [
-          "Cenozoic",
-          "Mesozoic",
-          "Paleozoic",
-          "Precambrian"
-        ],
-        "answer": "Mesozoic"
-      }
-    },
-    {
-      "paragraph": "Dinosaurs continue to capture our imagination today due to their size, mystery, and the clues they left behind in the fossil record. Scientists study dinosaur bones, footprints, and other fossils to understand how they moved, what they ate, and how they might have behaved.",
-      "question": {
-        "prompt": "What do scientists study to learn about dinosaurs?",
-        "options": [
-          "Live recordings",
-          "Ancient scrolls",
-          "Fossils",
-          "DNA samples"
-        ],
-        "answer": "Fossils"
-      }
-    }
-  ]
+const getFallbackLessonData = (day: number): LessonData => {
+  // Make sure day is a valid number between 1 and 14
+  const validDay = Math.max(1, Math.min(14, day));
+  return dinosaurLessons[validDay];
 };
 
 interface QuestionState {
@@ -115,6 +61,9 @@ export default function LessonScreen() {
   // Track lesson progress
   const [progress, setProgress] = useState(0);
   
+  // Track XP points earned in this lesson
+  const [earnedXP, setEarnedXP] = useState(0);
+  
   // Fetch lesson data when component mounts or params change
   useEffect(() => {
     const fetchLesson = async () => {
@@ -135,10 +84,10 @@ export default function LessonScreen() {
         setError("Failed to load lesson. Using offline content instead.");
         
         // Use fallback data
-        setLessonData(fallbackLessonData);
+        setLessonData(getFallbackLessonData(day));
         
         // Initialize question states with fallback data
-        setQuestionsState(fallbackLessonData.lesson.reduce((acc, _, index) => {
+        setQuestionsState(getFallbackLessonData(day).lesson.reduce((acc, _, index) => {
           acc[index] = { selectedAnswer: null, isRevealed: false, isCorrect: null };
           return acc;
         }, {} as Record<number, QuestionState>));
@@ -200,6 +149,11 @@ export default function LessonScreen() {
     const selectedAnswer = questionsState[questionIndex].selectedAnswer;
     const isCorrect = selectedAnswer === correctAnswer;
     
+    // Award XP points for correct answers
+    if (isCorrect) {
+      setEarnedXP(prev => prev + 5); // Add 5 XP for each correct answer
+    }
+    
     setQuestionsState(prev => ({
       ...prev,
       [questionIndex]: {
@@ -214,12 +168,15 @@ export default function LessonScreen() {
     const newProgress = Math.floor((answeredCount / lessonData.lesson.length) * 100);
     setProgress(newProgress);
     
-    // If all questions are answered, show completion alert
+    // If all questions are answered, show completion alert with XP
     if (answeredCount === lessonData.lesson.length) {
+      // Add 10 XP for completing the lesson
+      setEarnedXP(prev => prev + 10);
+      
       setTimeout(() => {
         Alert.alert(
           "Lesson Completed!",
-          "Congratulations! You've completed this lesson. Ready to move to the next one?",
+          `Congratulations! You've earned ${earnedXP + 10} XP points in this lesson. Ready to move to the next one?`,
           [
             { text: "Not Now", style: "cancel" },
             { text: "Next Lesson", onPress: () => router.push('/roadmap') }
@@ -251,18 +208,16 @@ export default function LessonScreen() {
           backRoute="/roadmap"
           title={`Loading Day ${day}...`}
         />
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={primaryColor} />
-          <Text style={[styles.loadingText, { color: colors.text }]}>
-            Loading your lesson...
-          </Text>
-        </View>
+        <LoadingDino 
+          message="Drawing up your lesson plan!" 
+          isLoading={isLoading}
+        />
       </SafeAreaView>
     );
   }
   
   // Safety check - use fallback if lessonData is still null after loading
-  const displayLesson = lessonData || fallbackLessonData;
+  const displayLesson = lessonData || getFallbackLessonData(day);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -271,7 +226,7 @@ export default function LessonScreen() {
       <DinoHeader 
         showBackButton={true}
         backRoute="/roadmap"
-        title={`Day ${displayLesson.day}: ${displayLesson.title}`}
+        title={`Day ${displayLesson.day}`}
       />
       
       {error && (
@@ -287,7 +242,7 @@ export default function LessonScreen() {
           <Text style={styles.summary}>{displayLesson.summary}</Text>
         </View>
         
-        {/* Progress Tracker */}
+        {/* Progress and XP Tracker */}
         <View style={styles.progressContainer}>
           <View style={styles.progressHeader}>
             <Text style={[styles.progressText, { color: colors.text }]}>Your Progress</Text>
@@ -302,6 +257,16 @@ export default function LessonScreen() {
               ]} 
             />
           </View>
+          
+          {/* XP Points earned */}
+          {earnedXP > 0 && (
+            <View style={styles.xpContainer}>
+              <View style={styles.xpBadge}>
+                <Text style={styles.xpText}>XP</Text>
+              </View>
+              <Text style={[styles.xpValue, { color: colors.text }]}>+{earnedXP} points earned</Text>
+            </View>
+          )}
         </View>
         
         {/* Lesson Content */}
@@ -406,7 +371,7 @@ export default function LessonScreen() {
               if (progress === 100) {
                 Alert.alert(
                   "Lesson Completed!",
-                  "Congratulations! You've completed this lesson. Ready to move to the next one?",
+                  `Congratulations! You've earned ${earnedXP + 10} XP points in this lesson. Ready to move to the next one?`,
                   [
                     { text: "Not Now", style: "cancel" },
                     { text: "Next Lesson", onPress: () => router.push('/roadmap') }
@@ -478,6 +443,7 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     overflow: 'hidden',
+    marginBottom: 10,
   },
   progressFill: {
     height: '100%',
@@ -647,5 +613,26 @@ const styles = StyleSheet.create({
     color: errorTextColor,
     fontSize: 15,
     fontWeight: '600',
+  },
+  xpContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  xpBadge: {
+    backgroundColor: DinoLearnColors.burntOrange,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    marginRight: 8,
+  },
+  xpText: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 12,
+  },
+  xpValue: {
+    fontWeight: '600',
+    color: DinoLearnColors.burntOrange,
   },
 }); 

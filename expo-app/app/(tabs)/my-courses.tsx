@@ -31,6 +31,14 @@ export default function MyCoursesScreen() {
       <DinoHeader onMenuPress={() => {/* Handle menu press */}} />
       
       <View style={styles.header}>
+        <View style={styles.dinoReaderContainer}>
+          <Image 
+            source={require('@/assets/images/Reading.png')} 
+            style={styles.dinoReaderImage}
+            resizeMode="contain"
+          />
+        </View>
+        
         <Text style={[styles.title, { color: colors.text }]}>My Courses</Text>
         <Text style={[styles.subtitle, { color: colors.text + 'CC' }]}>
           Continue learning from where you left off
@@ -348,5 +356,14 @@ const styles = StyleSheet.create({
     width: 1,
     height: 40,
     backgroundColor: '#E0E0E0',
+  },
+  dinoReaderContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 15,
+  },
+  dinoReaderImage: {
+    width: 150,
+    height: 150,
   },
 }); 

@@ -1,10 +1,14 @@
 import { API_ENDPOINTS } from '@/constants/ApiConfig';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+import { dinosaurRoadmap, dinosaurLessons } from './mock-data';
 
 // Maximum number of retries for API calls
 const MAX_RETRIES = 2;
 const RETRY_DELAY = 1000; // milliseconds
+
+// Flag to use mock data instead of actual API calls
+const USE_MOCK_DATA = true;
 
 /**
  * Helper function to add delay
@@ -73,6 +77,16 @@ export interface LessonData {
  * @returns A promise with the roadmap data
  */
 export const generateRoadmap = async (topic: string): Promise<RoadmapData> => {
+  // If using mock data, return the dinosaur roadmap directly
+  if (USE_MOCK_DATA) {
+    // Add a small delay to simulate API call
+    await delay(300);
+    console.log("Using mock roadmap data for:", topic);
+    
+    // We're currently only supporting "Dinosaurs" as a topic in mock mode
+    return dinosaurRoadmap;
+  }
+  
   let retries = 0;
   
   // Get appropriate API URL
@@ -129,6 +143,19 @@ export const generateLesson = async (
   day: number,
   title: string
 ): Promise<LessonData> => {
+  // If using mock data, return the dinosaur lesson directly
+  if (USE_MOCK_DATA) {
+    // Add a small delay to simulate API call
+    await delay(400);
+    console.log(`Using mock lesson data for day ${day}: ${title}`);
+    
+    // Make sure day is a valid number between 1 and 14
+    const validDay = Math.max(1, Math.min(14, day));
+    
+    // Return the lesson for the specified day
+    return dinosaurLessons[validDay];
+  }
+  
   let retries = 0;
   
   // Get appropriate API URL
