@@ -174,7 +174,7 @@ export default function Dashboard() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       
-      <DinoHeader currentScreen="dashboard" />
+      <DinoHeader onMenuPress={() => {/* Handle menu press */}} />
       
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Search Section */}
@@ -219,48 +219,57 @@ export default function Dashboard() {
               <View style={[styles.titleUnderline, { backgroundColor: DinoLearnColors.burntOrange + '33' }]} />
             </View>
             
-            <View style={[styles.filtersContainer, { backgroundColor: DinoLearnColors.lightGray }]}>
+            <View style={styles.headerRight}>
               <TouchableOpacity
-                style={[
-                  styles.filterButton,
-                  activeFilter === 'recent' && [
-                    styles.activeFilterButton,
-                    { backgroundColor: DinoLearnColors.burntOrange }
-                  ]
-                ]}
-                onPress={() => setActiveFilter('recent')}
+                style={styles.viewRoadmapButton}
+                onPress={() => router.push('/roadmap')}
               >
-                <ClockIcon />
-                <Text
-                  style={[
-                    styles.filterText,
-                    { color: activeFilter === 'recent' ? 'white' : DinoLearnColors.navyBlue }
-                  ]}
-                >
-                  Recent
-                </Text>
+                <Text style={styles.viewRoadmapText}>View Roadmap</Text>
               </TouchableOpacity>
               
-              <TouchableOpacity
-                style={[
-                  styles.filterButton,
-                  activeFilter === 'popular' && [
-                    styles.activeFilterButton,
-                    { backgroundColor: DinoLearnColors.burntOrange }
-                  ]
-                ]}
-                onPress={() => setActiveFilter('popular')}
-              >
-                <StarIcon />
-                <Text
+              <View style={[styles.filtersContainer, { backgroundColor: DinoLearnColors.lightGray }]}>
+                <TouchableOpacity
                   style={[
-                    styles.filterText,
-                    { color: activeFilter === 'popular' ? 'white' : DinoLearnColors.navyBlue }
+                    styles.filterButton,
+                    activeFilter === 'recent' && [
+                      styles.activeFilterButton,
+                      { backgroundColor: DinoLearnColors.burntOrange }
+                    ]
                   ]}
+                  onPress={() => setActiveFilter('recent')}
                 >
-                  Popular
-                </Text>
-              </TouchableOpacity>
+                  <ClockIcon />
+                  <Text
+                    style={[
+                      styles.filterText,
+                      { color: activeFilter === 'recent' ? 'white' : DinoLearnColors.navyBlue }
+                    ]}
+                  >
+                    Recent
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[
+                    styles.filterButton,
+                    activeFilter === 'popular' && [
+                      styles.activeFilterButton,
+                      { backgroundColor: DinoLearnColors.burntOrange }
+                    ]
+                  ]}
+                  onPress={() => setActiveFilter('popular')}
+                >
+                  <StarIcon />
+                  <Text
+                    style={[
+                      styles.filterText,
+                      { color: activeFilter === 'popular' ? 'white' : DinoLearnColors.navyBlue }
+                    ]}
+                  >
+                    Popular
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
           
@@ -382,6 +391,22 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
     marginTop: 8,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  viewRoadmapButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: DinoLearnColors.navyBlue,
+  },
+  viewRoadmapText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
   },
   filtersContainer: {
     flexDirection: 'row',

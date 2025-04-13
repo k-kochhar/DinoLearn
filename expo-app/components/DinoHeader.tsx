@@ -1,24 +1,39 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { IconSymbol } from './ui/IconSymbol';
 import { DinoLearnColors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
+import Svg, { Path } from 'react-native-svg';
 
 interface DinoHeaderProps {
-  currentScreen?: 'dashboard' | 'courses' | 'library';
-  userName?: string;
-  userInitials?: string;
+  onMenuPress?: () => void;
+  showBackButton?: boolean;
+  backRoute?: string;
+  title?: string;
 }
 
-export function DinoHeader({ 
-  currentScreen = 'dashboard', 
-  userName = 'Kshitij', 
-  userInitials = 'KS' 
-}: DinoHeaderProps) {
+export function DinoHeader({ onMenuPress, showBackButton = false, backRoute = '/(tabs)', title }: DinoHeaderProps) {
+  const router = useRouter();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+
+  // Back arrow icon
+  const BackIcon = () => (
+    <Svg
+      width={20}
+      height={20}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={DinoLearnColors.navyBlue}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+    </Svg>
+  );
 
   return (
     <View style={[
@@ -29,109 +44,41 @@ export function DinoHeader({
       }
     ]}>
       <View style={styles.content}>
-        <Link href={"/(tabs)" as any} asChild>
+        {showBackButton ? (
           <TouchableOpacity 
-            style={styles.logoContainer}
-            disabled={currentScreen === 'dashboard'}
+            style={styles.backButton}
+            onPress={() => router.back()}
           >
-            <View style={[styles.logoCircle, { backgroundColor: colors.card }]}>
-              <Image 
-                source={require('@/assets/images/dino-head.png')} 
-                style={styles.logo}
-                resizeMode="contain"
-              />
-            </View>
-            <Text style={[styles.logoText, { color: colors.primary }]}>DinoLearn</Text>
+            <BackIcon />
+            <Text style={styles.backButtonText}>Back</Text>
           </TouchableOpacity>
-        </Link>
-
-        <View style={styles.navContainer}>
+        ) : (
           <Link href={"/(tabs)" as any} asChild>
-            <TouchableOpacity 
-              style={[
-                styles.navItem, 
-                currentScreen === 'dashboard' && styles.activeNavItem
-              ]}
-              disabled={currentScreen === 'dashboard'}
-            >
-              <Text 
-                style={[
-                  styles.navText, 
-                  { color: colors.text },
-                  currentScreen === 'dashboard' && { 
-                    color: colors.primary, 
-                    fontWeight: '700' 
-                  }
-                ]}
-              >
-                Dashboard
-              </Text>
-              {currentScreen === 'dashboard' && (
-                <View style={[styles.activeIndicator, { backgroundColor: colors.tint }]} />
-              )}
+            <TouchableOpacity style={styles.logoContainer}>
+              <View style={[styles.logoCircle, { backgroundColor: colors.card }]}>
+                <Image 
+                  source={require('@/assets/images/dino-head.png')} 
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+              </View>
+              <Text style={[styles.logoText, { color: colors.primary }]}>DinoLearn</Text>
             </TouchableOpacity>
           </Link>
+        )}
 
-          <Link href={"/(tabs)/my-courses" as any} asChild>
-            <TouchableOpacity 
-              style={[
-                styles.navItem,
-                currentScreen === 'courses' && styles.activeNavItem
-              ]}
-              disabled={currentScreen === 'courses'}
-            >
-              <Text 
-                style={[
-                  styles.navText, 
-                  { color: colors.text },
-                  currentScreen === 'courses' && { 
-                    color: colors.primary, 
-                    fontWeight: '700' 
-                  }
-                ]}
-              >
-                My Courses
-              </Text>
-              {currentScreen === 'courses' && (
-                <View style={[styles.activeIndicator, { backgroundColor: colors.tint }]} />
-              )}
-            </TouchableOpacity>
-          </Link>
+        {title ? (
+          <Text style={[styles.titleText, { color: colors.primary }]}>{title}</Text>
+        ) : (
+          <View style={styles.spacer} />
+        )}
 
-          <Link href={"/(tabs)/library" as any} asChild>
-            <TouchableOpacity 
-              style={[
-                styles.navItem,
-                currentScreen === 'library' && styles.activeNavItem
-              ]}
-              disabled={currentScreen === 'library'}
-            >
-              <Text 
-                style={[
-                  styles.navText, 
-                  { color: colors.text },
-                  currentScreen === 'library' && { 
-                    color: colors.primary, 
-                    fontWeight: '700' 
-                  }
-                ]}
-              >
-                Library
-              </Text>
-              {currentScreen === 'library' && (
-                <View style={[styles.activeIndicator, { backgroundColor: colors.tint }]} />
-              )}
-            </TouchableOpacity>
-          </Link>
-
-          <TouchableOpacity style={[styles.profileButton, { backgroundColor: colors.card }]}>
-            <View style={[styles.avatarCircle, { backgroundColor: DinoLearnColors.skyBlue }]}>
-              <Text style={[styles.avatarText, { color: colors.primary }]}>{userInitials}</Text>
-            </View>
-            <Text style={[styles.userName, { color: colors.text }]}>{userName}</Text>
-            <IconSymbol name="chevron.down" size={16} color={DinoLearnColors.charcoalGray + 'B3'} />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity 
+          style={styles.menuButton}
+          onPress={onMenuPress}
+        >
+          <IconSymbol name="line.3.horizontal" size={24} color={colors.text} />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -179,54 +126,30 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
   },
-  navContainer: {
+  backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 24,
+    gap: 8,
   },
-  navItem: {
-    position: 'relative',
-  },
-  activeNavItem: {
-    // Active state is handled with the indicator
-  },
-  navText: {
+  backButtonText: {
     fontSize: 15,
+    fontWeight: '500',
+    color: DinoLearnColors.navyBlue,
   },
-  activeIndicator: {
+  titleText: {
+    fontSize: 18,
+    fontWeight: '600',
     position: 'absolute',
-    bottom: -5,
     left: 0,
     right: 0,
-    height: 2,
-    borderRadius: 1,
+    textAlign: 'center',
+    zIndex: -1,
   },
-  profileButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+  spacer: {
+    flex: 1,
+  },
+  menuButton: {
+    padding: 8,
     borderRadius: 8,
-    gap: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  avatarCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  userName: {
-    fontSize: 14,
-    fontWeight: '500',
   },
 }); 

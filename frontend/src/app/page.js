@@ -12,14 +12,14 @@ export default function Home() {
         <header className="flex justify-between items-center mb-24">
           <div className="flex items-center gap-3">
             <div className="h-15 w-15  rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
-            <Image 
+        <Image
                 src="/Head.png" 
                 alt="Student learning online" 
                 width={150} 
                 height={150}
                 className="rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.1)]"
-                priority
-              />
+          priority
+        />
             </div>
             <h1 className="text-2xl font-medium text-[#43587C]">DinoLearn</h1>
           </div>
@@ -63,14 +63,14 @@ export default function Home() {
                 className="flex justify-center rounded-xl px-8 py-3.5 text-[#E17454] font-medium bg-transparent border-2 border-[#E17454] hover:bg-[#E17454] hover:text-white transition-all duration-300"
               >
                 Learn More
-              </a>
-            </div>
+          </a>
+        </div>
           </div>
           
           <div className="md:w-1/2 relative">
             <div className="absolute -z-10 w-72 h-72 rounded-full bg-[#9EC1D9]/50 blur-3xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
             <div className="relative">
-              <Image 
+          <Image
                 src="/Reading.png" 
                 alt="Student learning online" 
                 width={500} 
@@ -267,7 +267,7 @@ export default function Home() {
           <div className="text-center text-[#2C3342]/50 text-sm border-t border-[#2C3342]/10 pt-6 pb-2">
             © {new Date().getFullYear()} DinoLearn. All rights reserved.
           </div>
-        </footer>
+      </footer>
       </div>
     </div>
   );
