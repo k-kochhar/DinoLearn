@@ -84,6 +84,8 @@ async def get_lesson_by_id(id: str):
         if not lesson_data:
             raise HTTPException(status_code=404, detail="Lesson not found")
 
+        # Convert ObjectId to string before returning
+        lesson_data["_id"] = str(lesson_data["_id"])
         return lesson_data
 
     except Exception as e:
