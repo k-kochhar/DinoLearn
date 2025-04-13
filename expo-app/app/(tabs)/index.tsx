@@ -8,7 +8,10 @@ import {
   FlatList,
   ScrollView,
   SafeAreaView,
-  useWindowDimensions
+  useWindowDimensions,
+  ActivityIndicator,
+  Alert,
+  Keyboard
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -37,6 +40,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('recent');
   const [courses, setCourses] = useState<Course[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     // Simulating data fetch
@@ -92,6 +96,33 @@ export default function Dashboard() {
       course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       course.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Handle search submission
+  const handleSearch = () => {
+    if (!searchQuery.trim()) {
+      Alert.alert("Enter a topic", "Please enter a topic to search for.");
+      return;
+    }
+    
+    setIsSearching(true);
+    
+    // Dismiss keyboard
+    Keyboard.dismiss();
+    
+    // Small delay to show loading state (for better UX)
+    setTimeout(() => {
+      setIsSearching(false);
+      
+      // Navigate to roadmap screen with the search query as the topic
+      router.push({
+        pathname: '/roadmap',
+        params: { topic: searchQuery.trim() }
+      });
+      
+      // Clear search query after navigation
+      setSearchQuery('');
+    }, 500);
+  };
 
   // Clear search query
   const clearSearch = () => setSearchQuery('');
@@ -170,22 +201,36 @@ export default function Dashboard() {
           </Text>
           
           <View style={styles.searchInputContainer}>
-            <View style={[styles.searchInputWrapper, { backgroundColor: colors.card }]}>
+            <View style={[
+              styles.searchInputWrapper, 
+              { 
+                backgroundColor: colors.card,
+                borderColor: DinoLearnColors.navyBlue + '10',
+                borderWidth: 1
+              }
+            ]}>
               <View style={styles.searchIconContainer}>
-                <MagnifyingGlassIcon />
+                {isSearching ? (
+                  <ActivityIndicator size="small" color={DinoLearnColors.burntOrange} />
+                ) : (
+                  <MagnifyingGlassIcon />
+                )}
               </View>
               
               <TextInput
                 style={[styles.searchInput, { color: colors.text }]}
-                placeholder="Search for courses, topics, or skills..."
+                placeholder="Search for a topic to learn..."
                 placeholderTextColor={DinoLearnColors.charcoalGray + '80'}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
+                onSubmitEditing={handleSearch}
+                returnKeyType="search"
+                editable={!isSearching}
               />
               
               {searchQuery ? (
                 <TouchableOpacity style={styles.clearButton} onPress={clearSearch}>
-                  <Text style={{ color: DinoLearnColors.burntOrange }}>Clear</Text>
+                  <Text style={styles.clearButtonText}>Clear</Text>
                 </TouchableOpacity>
               ) : null}
             </View>
@@ -213,6 +258,13 @@ export default function Dashboard() {
                 <Text style={styles.viewRoadmapText}>View Roadmap</Text>
               </TouchableOpacity>
               
+              {/* API Test Button - for debugging */}
+              <TouchableOpacity
+                style={[styles.viewRoadmapButton, { backgroundColor: DinoLearnColors.burntOrange }]}
+                onPress={() => router.push('/api-test')}
+              >
+                <Text style={styles.viewRoadmapText}>Test API</Text>
+              </TouchableOpacity>
             </View>
           </View>
           
@@ -252,51 +304,56 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: 16,
   },
   searchSection: {
-    minHeight: 180,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginVertical: 20,
+    paddingHorizontal: 16,
+    marginBottom: 16,
   },
   searchTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
+    color: DinoLearnColors.navyBlue,
   },
   searchInputContainer: {
-    width: '100%',
-    maxWidth: 500,
-    alignSelf: 'center',
-  },
-  searchInputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 0,
+  },
+  searchInputWrapper: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 12,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    overflow: 'hidden',
-    height: 56,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
-    shadowRadius: 12,
+    shadowRadius: 5,
     elevation: 2,
+    maxWidth: '100%',
   },
   searchIconContainer: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
     height: '100%',
+    paddingVertical: 6,
   },
   clearButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  clearButtonText: {
+    color: DinoLearnColors.burntOrange,
+    fontWeight: '500',
+    fontSize: 14,
   },
   mainContent: {
     flex: 1,
