@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Body
 from typing import Optional
+from bson import ObjectId
 from app.models.roadmap import Roadmap
 from app.models.lesson import Lesson
 from app.services.gemini_service import generate_roadmap_from_gemini
@@ -97,4 +98,69 @@ async def get_roadmaps(title: Optional[str] = None):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error retrieving roadmaps: {str(e)}"
+        )
+
+@router.get("/{roadmap_id}")
+async def get_roadmap_by_id(roadmap_id: str):
+    """Retrieve a specific roadmap by its ID"""
+    try:
+        # Convert string ID to ObjectId
+        roadmap_obj_id = ObjectId(roadmap_id)
+        
+        # Get the roadmap
+        roadmaps_collection = Roadmap.get_motor_collection()
+        roadmap = await roadmaps_collection.find_one({"_id": roadmap_obj_id})
+        
+        if not roadmap:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Roadmap with ID {roadmap_id} not found"
+            )
+        
+        # Format the response
+        formatted_roadmap = {
+            "_id": str(roadmap.get("_id", "unknown")),
+            "title": roadmap.get("title", "Untitled Roadmap"),
+        }
+        
+        # Get the topic from the title
+        topic = roadmap.get("title", "").replace(" Roadmap", "").strip() or "Untitled"
+        
+        # Process lessons
+        lesson_refs = roadmap.get("lessons", [])
+        lessons = []
+        
+        for lesson_ref in lesson_refs:
+            lesson_id = None
+            if isinstance(lesson_ref, dict) and "_id" in lesson_ref:
+                lesson_id = lesson_ref["_id"]
+            elif isinstance(lesson_ref, str):
+                lesson_id = lesson_ref
+            
+            if lesson_id:
+                lesson_data = await Lesson.get_motor_collection().find_one({"_id": lesson_id})
+                if lesson_data:
+                    lessons.append({
+                        "day": lesson_data.get("day", 0),
+                        "title": lesson_data.get("title", "Untitled"),
+                        "summary": lesson_data.get("summary", ""),
+                        "_id": str(lesson_data.get("_id", "unknown"))
+                    })
+        
+        # Sort lessons by day
+        sorted_lessons = sorted(lessons, key=lambda x: x["day"])
+        
+        # Add roadmap data to the response
+        formatted_roadmap["roadmap_data"] = {
+            "topic": topic,
+            "roadmap": sorted_lessons
+        }
+        
+        return formatted_roadmap
+        
+    except Exception as e:
+        print(f"❌ Failed to fetch roadmap: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving roadmap: {str(e)}"
         )
