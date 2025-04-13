@@ -23,7 +23,8 @@ async def create_roadmap(topic: str = Body(..., embed=True)):
                 title=title,
                 summary="",
                 lesson=[],
-                quiz=[]
+                quiz=[],
+                completed=False
             )
             await lesson.insert()
             lesson_refs.append(lesson)
