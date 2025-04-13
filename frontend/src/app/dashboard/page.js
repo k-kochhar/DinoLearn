@@ -24,8 +24,10 @@ export default function Dashboard() {
     setSearchQuery(e.target.value);
   };
 
-  // Function to call the course generation API
-  const generateCourse = (course) => {};
+  // Function to redirect to create course page
+  const generateCourse = () => {
+    window.location.href = "/create-course";
+  };
 
   // Filter courses based on search query
   const filteredCourses = courses.filter(
@@ -140,6 +142,12 @@ export default function Dashboard() {
               className="text-[#2C3342] hover:text-[#E17454] transition-colors"
             >
               Library
+            </Link>
+            <Link
+              href="/create-course"
+              className="text-[#2C3342] hover:text-[#E17454] transition-colors"
+            >
+              Create Course
             </Link>
             <div className="flex items-center gap-2 bg-white py-1.5 px-3 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer">
               <div className="h-9 w-9 bg-[#9EC1D9] rounded-full flex items-center justify-center">
@@ -278,12 +286,13 @@ export default function Dashboard() {
                     className="mt-4 bg-[#E17454] px-8 py-3.5 rounded-xl text-white hover:bg-[#cf6143] transition-colors font-medium"
                   >
                     Clear Search
-                  </button>{" "}
+                  </button>
                   <button
-                    onClick={() => generateCourse(searchQuery)}
-                    className="mt-4 bg-[#E17454] px-8 py-3.5 rounded-xl text-white hover:bg-[#cf6143] transition-colors font-medium"
+                    onClick={generateCourse}
+                    className="mt-4 bg-[#43587C] px-8 py-3.5 rounded-xl text-white hover:bg-[#374a6b] transition-colors font-medium flex items-center justify-center gap-2"
                   >
-                    Generate Course
+                    <RocketLaunchIcon className="h-5 w-5" />
+                    <span>Create New Course</span>
                   </button>
                 </div>
               </div>
