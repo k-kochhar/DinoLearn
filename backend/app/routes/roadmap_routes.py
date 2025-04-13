@@ -3,7 +3,6 @@ from typing import List
 from app.models.roadmap import Roadmap
 from app.models.lesson import Lesson
 from app.services.gemini_service import generate_roadmap_from_gemini
-from app.services.chatgpt_service import generate_lesson_content
 
 router = APIRouter()
 
@@ -18,21 +17,18 @@ async def create_roadmap(topic: str = Body(..., embed=True)):
         # Generate roadmap structure using Gemini
         roadmap_data = await generate_roadmap_from_gemini(topic)
         
-        # Generate lessons using Gemini
+        # Create lesson objects from roadmap data
         lesson_objects = []
         for item in roadmap_data["roadmap"]:
             day = item["day"]
             title = item["title"]
             
-            # Generate detailed lesson content
-            lesson_content = await generate_lesson_content(day, title)
-            
-            # Create and save lesson
+            # Create lesson with minimal data (no detailed content)
             lesson = Lesson(
-                day=lesson_content["day"],
-                title=lesson_content["title"],
-                summary=lesson_content["summary"],
-                lesson=lesson_content["lesson"]
+                day=day,
+                title=title,
+                summary=f"Day {day}: {title}",  # Simple summary with title
+                lesson=[]  # Empty lesson content - will be populated later
             )
             await lesson.insert()
             lesson_objects.append(lesson)
