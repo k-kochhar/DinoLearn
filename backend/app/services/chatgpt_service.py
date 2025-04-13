@@ -8,6 +8,76 @@ load_dotenv()
 
 openai = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+async def generate_prequiz(topic: str):
+    """
+    Generates 3 pre-quiz multiple choice questions for the given topic
+    to gauge the user's prior knowledge
+    """
+    prompt = f"""
+Create exactly 3 multiple choice questions to test basic knowledge on the topic: "{topic}".
+These questions will be used as a pre-quiz to gauge the user's baseline knowledge before learning.
+
+Return the following JSON format EXACTLY:
+
+{{
+  "prequiz": [
+    {{
+      "question": "...",
+      "options": ["A", "B", "C", "D"],
+      "answer": "B"
+    }},
+    {{
+      "question": "...",
+      "options": ["A", "B", "C", "D"],
+      "answer": "A"
+    }},
+    {{
+      "question": "...",
+      "options": ["A", "B", "C", "D"],
+      "answer": "C"
+    }}
+  ]
+}}
+
+Be concise, make the questions introductory level, and follow the JSON format exactly.
+"""
+
+    response = await openai.chat.completions.create(
+        model="gpt-4-turbo",
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    text = response.choices[0].message.content.strip()
+
+    # Extract JSON if ChatGPT adds extra text
+    match = re.search(r'({[\s\S]*})', text)
+    if match:
+        try:
+            return json.loads(match.group(1))
+        except json.JSONDecodeError:
+            pass
+
+    # fallback
+    return {
+        "prequiz": [
+            {
+                "question": f"Basic question about {topic}?",
+                "options": ["Option A", "Option B", "Option C", "Option D"],
+                "answer": "A"
+            },
+            {
+                "question": f"Another question about {topic}?",
+                "options": ["Option A", "Option B", "Option C", "Option D"],
+                "answer": "B"
+            },
+            {
+                "question": f"Third question about {topic}?",
+                "options": ["Option A", "Option B", "Option C", "Option D"],
+                "answer": "C"
+            }
+        ]
+    }
+
 async def generate_lesson_plan_and_quiz(day: int, title: str, topic: str):
     """
     Uses ChatGPT API to generate a detailed lesson plan + quiz for a given topic/day
