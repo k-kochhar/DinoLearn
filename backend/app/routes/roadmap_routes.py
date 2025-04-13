@@ -47,8 +47,33 @@ async def create_roadmap(topic: str = Body(..., embed=True)):
             detail=f"Failed to generate roadmap: {str(e)}"
         )
 
-@router.get("/", response_model=List[Roadmap])
+@router.get("/")
 async def get_roadmaps():
-    """Get all roadmaps with their lessons"""
+    """Get all roadmaps with their lessons in the desired format"""
     roadmaps = await Roadmap.find_all().to_list()
-    return roadmaps
+    
+    # Format the response to include the roadmap_data field
+    formatted_roadmaps = []
+    for roadmap in roadmaps:
+        # Get the raw model with both the original fields and computed fields
+        roadmap_dict = roadmap.model_dump(by_alias=True, exclude_unset=False)
+        
+        # Include the roadmap_data field in the response
+        if not hasattr(roadmap, "roadmap_data"):
+            # Generate the roadmap_data on-the-fly if needed
+            topic = roadmap.title.replace(" Roadmap", "")
+            roadmap_items = []
+            for lesson in roadmap.lessons:
+                if hasattr(lesson, "day") and hasattr(lesson, "title"):
+                    roadmap_items.append({
+                        "day": lesson.day,
+                        "title": lesson.title
+                    })
+            roadmap_dict["roadmap_data"] = {
+                "topic": topic,
+                "roadmap": roadmap_items
+            }
+            
+        formatted_roadmaps.append(roadmap_dict)
+    
+    return formatted_roadmaps
