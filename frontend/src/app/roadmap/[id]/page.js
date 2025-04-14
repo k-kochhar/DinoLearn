@@ -114,7 +114,7 @@ export default function RoadmapPage() {
             Roadmap Not Found
           </h2>
           <p className="text-[#2C3342]/70 mb-8">
-            We couldn't find the roadmap you're looking for.
+            We couldn&apos;t find the roadmap you&apos;re looking for.
           </p>
           <Link
             href="/create-course"
